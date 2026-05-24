@@ -846,9 +846,13 @@
     }
 
     function filterTable() {
-        const f = fleetData[currentFleet]; const s = document.getElementById('station-search-filter').value.trim().toUpperCase();
-        const rVal = document.getElementById('region-filter').value; const aVal = document.getElementById('aircraft-filter').value; const stVal = document.getElementById('status-filter').value;
+        const f = fleetData[currentFleet]; 
+        const s = document.getElementById('station-search-filter').value.trim().toUpperCase();
+        const rVal = document.getElementById('region-filter').value; 
+        const aVal = document.getElementById('aircraft-filter').value; 
+        const stVal = document.getElementById('status-filter').value;
         
+        // 1. التحكم في إظهار وإخفاء أعمدة الطائرات والكروت بناءً على فلتر الطائرة
         f.aircrafts.forEach(p => {
             let disp = (aVal === 'all' || aVal === p) ? '' : 'none';
             if(document.querySelector(`.col-${p}`)) document.querySelector(`.col-${p}`).style.display = disp;
@@ -856,10 +860,42 @@
             if(document.querySelector(`.card-${p}`)) document.querySelector(`.card-${p}`).style.display = disp;
         });
 
-        document.querySelectorAll('#table-body tr').forEach((row, idx) => {
-            const rData = f.stations[idx]; if(!rData) return;
-            const matchS = s === '' || rData.station.includes(s); const matchR = rVal === 'all' || rData.region === rVal;
-            let matchSt = aVal !== 'all' ? ((rData[aVal] || "") === stVal || stVal === 'all') : (stVal === 'all' || f.aircrafts.some(p => rData[p] === stVal));
+        // 2. الفلترة الصحيحة لكل سطر بناءً على الداتا الفعلية المكتوبة جوه الـ HTML
+        document.querySelectorAll('#table-body tr').forEach((row) => {
+            // جلب الإقليم الجغرافي من الخاصية اللي على السطر
+            const rowRegion = row.getAttribute('data-region');
+            // جلب اسم المحطة من الكود المتواجد جوه السطر نفسه
+            const rowStation = row.querySelector('code').innerText.trim().toUpperCase();
+            
+            // فحص مطابقة البحث والمنطقة
+            const matchS = s === '' || rowStation.includes(s); 
+            const matchR = rVal === 'all' || rowRegion === rVal;
+            
+            // فحص مطابقة الحالة بناءً على الطائرة المختارة
+            let matchSt = false;
+            if (stVal === 'all') {
+                matchSt = true;
+            } else {
+                if (aVal !== 'all') {
+                    // لو مختارين طيارة محددة، نشوف حالتها في السطر ده بالذات
+                    const cell = row.querySelector(`.cell-${aVal}`);
+                    const badge = cell ? cell.querySelector('.status-badge') : null;
+                    const statusText = badge ? (badge.classList.contains('approved') ? '✔️' : 'Under Processed') : '';
+                    matchSt = statusText === stVal;
+                } else {
+                    // لو مش مختارين طيارة، نشوف لو أي طيارة في السطر واخدة الحالة دي
+                    matchSt = Array.from(row.querySelectorAll('.status-badge')).some(badge => {
+                        const statusText = badge.classList.contains('approved') ? '✔️' : 'Under Processed';
+                        return statusText === stVal;
+                    });
+                    // لو بندور على الـ Blank (الخالي)
+                    if (stVal === '' && row.querySelectorAll('.status-badge.blank').length > 0) {
+                        matchSt = true;
+                    }
+                }
+            }
+            
+            // تطبيق الإخفاء أو الإظهار بشكل صحيح وجذري
             row.style.display = (matchS && matchR && matchSt) ? '' : 'none';
         });
     }
