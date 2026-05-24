@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EGYPTAIR Fleet Dashboard (Hybrid Cloud/Offline)</title>
     <style>
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
         :root {
             --primary: #0f172a;
             --accent: #0284c7;
@@ -796,55 +800,75 @@
     }
 
     async function saveManagementForm() {
-        const type = document.getElementById('management-type').value; const f = fleetData[currentFleet];
+    const type = document.getElementById('management-type').value; const f = fleetData[currentFleet];
 
-        if(type === 'aircraft') {
-            if(document.getElementById('aircraft-mode').value === 'add') {
-                const name = document.getElementById('new-aircraft-name').value.trim().toUpperCase(); if(!name) return;
-                const key = name.replace(/[^A-Z0-9]/g, "").toLowerCase(); f.aircrafts.push(key);
-                f.labels[key] = { title: name, color: "#" + Math.floor(Math.random()*16777215).toString(16) }; f.stations.forEach(r => r[key] = "");
-            } else {
-                const target = document.getElementById('remove-aircraft-select').value;
-                f.aircrafts = f.aircrafts.filter(p => p !== target); delete f.labels[target]; f.stations.forEach(r => delete r[target]);
+    if(type === 'aircraft') {
+        if(document.getElementById('aircraft-mode').value === 'add') {
+            const name = document.getElementById('new-aircraft-name').value.trim().toUpperCase(); 
+            if(!name) {
+                showNotification("⚠️ Please enter a valid Aircraft Registration!", "warning");
+                return;
             }
+            const key = name.replace(/[^A-Z0-9]/g, "").toLowerCase(); 
+            
+            // حماية لمنع تكرار الطائرة
+            if(f.aircrafts.includes(key)) {
+                showNotification(`❌ Aircraft (${name}) already exists!`, "error");
+                return;
+            }
+            
+            f.aircrafts.push(key);
+            f.labels[key] = { title: name, color: "#" + Math.floor(Math.random()*16777215).toString(16) }; f.stations.forEach(r => r[key] = "");
+            showNotification(`✈️ Aircraft ${name} added successfully!`, "success");
         } else {
-            const target = document.getElementById('form-station-select').value;
+            const target = document.getElementById('remove-aircraft-select').value;
+            const planeTitle = f.labels[target]?.title || target.toUpperCase();
+            f.aircrafts = f.aircrafts.filter(p => p !== target); delete f.labels[target]; f.stations.forEach(r => delete r[target]);
+            showNotification(`🗑️ Aircraft ${planeTitle} removed.`, "warning");
+        }
+    } else {
+        const target = document.getElementById('form-station-select').value;
 
-            if(target === "TCO_MANAGEMENT") {
-                if(!f.tco_tracks) f.tco_tracks = {};
-                f.aircrafts.forEach(plane => {
-                    f.tco_tracks[plane] = {
-                        uae: document.getElementById(`form-tco-uae-${plane}`).value,
-                        uk: document.getElementById(`form-tco-uk-${plane}`).value,
-                        eu: document.getElementById(`form-tco-eu-${plane}`).value
-                    };
-                });
-            } 
-            else {
-                const mode = document.getElementById('form-mode').value; const region = document.getElementById('form-region').value;
-                let vals = {}; f.aircrafts.forEach(p => vals[p] = document.getElementById(`form-input-${p}`).value);
+        if(target === "TCO_MANAGEMENT") {
+            if(!f.tco_tracks) f.tco_tracks = {};
+            f.aircrafts.forEach(plane => {
+                f.tco_tracks[plane] = {
+                    uae: document.getElementById(`form-tco-uae-${plane}`).value,
+                    uk: document.getElementById(`form-tco-uk-${plane}`).value,
+                    eu: document.getElementById(`form-tco-eu-${plane}`).value
+                };
+            });
+            showNotification("📋 TCO Requirements updated successfully!", "success");
+        } 
+        else {
+            const mode = document.getElementById('form-mode').value; const region = document.getElementById('form-region').value;
+            let vals = {}; f.aircrafts.forEach(p => vals[p] = document.getElementById(`form-input-${p}`).value);
 
-                if(target === "ADD_NEW_STATION_MODE") {
-                    const sName = document.getElementById('form-station-name').value.trim().toUpperCase();
-                    if (!sName) {
-                        alert("⚠️ Please enter a valid Station Code!");
-                        return;
-                    }
-                    
-                    // الفحص الذكي: لو المحطة موجودة مسبقاً في أي إقليم جوه الفليت الحالي
-                    if (f.stations.some(i => i.station === sName)) {
-                        alert(`❌ The station (${sName}) already exists in this fleet database!\nIf you want to modify it, please switch Action Mode to 'Existing Station (Edit / Delete)'.`);
-                        return;
-                    }
-                    let newRow = { region, station: sName }; f.aircrafts.forEach(p => newRow[p] = vals[p]); f.stations.push(newRow);
-                } else {
-                    const idx = f.stations.findIndex(i => i.station === target);
-                    if(idx !== -1) { f.stations[idx].region = region; f.aircrafts.forEach(p => f.stations[idx][p] = vals[p]); }
+            if(target === "ADD_NEW_STATION_MODE") {
+                const sName = document.getElementById('form-station-name').value.trim().toUpperCase();
+                if (!sName) {
+                    showNotification("⚠️ Please enter a valid Station Code!", "warning");
+                    return;
+                }
+                
+                // التنبيه الاحترافي لمنع تكرار المحطة
+                if (f.stations.some(i => i.station === sName)) {
+                    showNotification(`❌ Station (${sName}) already exists in this fleet!`, "error");
+                    return;
+                }
+                let newRow = { region, station: sName }; f.aircrafts.forEach(p => newRow[p] = vals[p]); f.stations.push(newRow);
+                showNotification(`📍 Station ${sName} added successfully!`, "success");
+            } else {
+                const idx = f.stations.findIndex(i => i.station === target);
+                if(idx !== -1) { 
+                    f.stations[idx].region = region; f.aircrafts.forEach(p => f.stations[idx][p] = vals[p]); 
+                    showNotification(`✏️ Station ${target} updated successfully!`, "success");
                 }
             }
         }
-        await saveToCloud(); initializeDashboard(); closeModal();
     }
+    await saveToCloud(); initializeDashboard(); closeModal();
+}
 
     function updateCounts() {
         if(!fleetData[currentFleet] || !fleetData[currentFleet].aircrafts) return;
@@ -961,6 +985,26 @@
     document.getElementById('admin-password-input').addEventListener('keypress', function(e) { if (e.key === 'Enter') { verifyAdminPassword(); } });
 
     fetchFromCloud();
+function showNotification(message, type = "error") {
+    const toast = document.getElementById('custom-toast');
+    toast.innerText = message;
+    toast.style.display = 'flex';
+    
+    // تغيير اللون بناءً على نوع الرسالة
+    if (type === "success") {
+        toast.style.backgroundColor = "var(--success)"; // أخضر
+    } else if (type === "warning") {
+        toast.style.backgroundColor = "var(--warning)"; // أصفر
+    } else {
+        toast.style.backgroundColor = "var(--danger)"; // أحمر للغلط
+    }
+    
+    // تختفي تلقائياً بعد 4 ثواني
+    setTimeout(() => {
+        toast.style.display = 'none';
+    }, 4000);
+}
 </script>
+<div id="custom-toast" style="display: none; position: fixed; bottom: 30px; right: 30px; background: #ef4444; color: white; padding: 16px 24px; border-radius: 10px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); z-index: 10000; font-weight: bold; font-size: 14px; align-items: center; gap: 10px; animation: slideIn 0.3s ease;"></div>
 </body>
 </html>
