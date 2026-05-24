@@ -152,25 +152,18 @@
             header h1 { font-size: 20px; }
             .header-actions { justify-content: center; width: 100%; }
             .btn { width: 100%; text-align: center; padding: 8px 16px; font-size: 13px; }
-            
-            /* 💡 إخفاء زرار الطباعة تماماً على الموبايل بطلبك يا فنان */
             .btn-print { display: none !important; }
-            
             #sync-status { width: 100%; justify-content: center; box-sizing: border-box; font-size: 12px; }
             .controls { padding: 10px; gap: 12px; margin-bottom: 15px; }
             .filter-group { min-width: 100%; flex-direction: column; align-items: flex-start; gap: 4px; font-size: 13px; }
-            
             th, td { padding: 8px 12px; font-size: 13px; }
-            
             .tco-section { padding: 10px; margin-bottom: 15px; }
             .tco-section h2 { font-size: 14px; margin-bottom: 8px; }
             .tco-table th { padding: 6px 8px; font-size: 11px; }
             .tco-table td { padding: 6px 8px; font-size: 12px; }
             .tco-badge { font-size: 11px; padding: 2px 6px; border-radius: 4px; }
-            
             td code { font-size: 13px; padding: 3px 6px; border-radius: 4px; }
             .status-badge { font-size: 12px; padding: 3px 6px; }
-            
             .modal-content { padding: 15px; }
             .modal-actions { flex-direction: column-reverse; }
             .modal-actions div { width: 100%; }
@@ -178,57 +171,17 @@
         }
 
         @media print {
-            /* 1. إجبار الصفحات على الفرد الكامل وإلغاء أي تقييد للارتفاع */
-            html, body {
-                height: auto !important;
-                min-height: 100% !important;
-                overflow: visible !important;
-                display: block !important;
-                background: white !important;
+            html, body, .container { 
+                display: block !important; 
+                height: auto !important; 
+                min-height: 0 !important;
                 padding: 0 !important;
                 margin: 0 !important;
-            }
-
-            .container {
-                display: block !important;
-                width: 100% !important;
-                max-width: none !important;
                 overflow: visible !important;
             }
-
-            /* 2. إلغاء الـ Overflow من حاوية الجدول تماماً لكي تظهر باقي الداتا */
-            .table-container { 
-                display: block !important;
-                overflow: visible !important; /* ده السحر اللي هيجيب باقي الصفحات */
-                overflow-x: visible !important;
-                max-height: none !important;
-                box-shadow: none !important;
-            }
-
-            /* 3. تهيئة الجداول لتتمدد تلقائياً عبر الصفحات */
-            table, .tco-table { 
-                width: 100% !important; 
-                table-layout: auto !important;
-                font-size: 11px; /* تصغير الخط قليلاً ليناسب الورقة */
-            }
-
-            th, td { 
-                white-space: normal !important; /* السماح للنص بالالتفاف بدل ما يقص أفقياً */
-                word-wrap: break-word !important;
-            }
-
-            /* 4. منع قطع صفوف الجدول في منتصف السطر */
-            tr { 
-                page-break-inside: avoid !important;
-                break-inside: avoid !important; 
-            }
-
-            /* 5. إخفاء العناصر غير المرغوبة في الطباعة */
             .controls, .btn, header p, .modal-overlay, .fleet-tabs, #sync-status, .tco-section h2 { 
                 display: none !important; 
             }
-
-            /* 6. الحفاظ على ألوان الهيدر والكروت أثناء الطباعة */
             header { 
                 background: #0f172a !important; 
                 color: white !important; 
@@ -236,13 +189,30 @@
                 -webkit-print-color-adjust: exact; 
                 print-color-adjust: exact; 
             }
-            
             .stat-card { 
                 border: 1px solid #cbd5e1 !important; 
                 box-shadow: none !important; 
                 background: #fff !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
+            }
+            .table-container {
+                overflow: visible !important;
+                box-shadow: none !important;
+                display: block !important;
+            }
+            table, .tco-table { 
+                font-size: 12px; 
+                width: 100% !important; 
+                table-layout: auto !important;
+            }
+            th, td { 
+                white-space: normal !important; 
+                word-wrap: break-word !important;
+            }
+            tr { 
+                page-break-inside: avoid !important; 
+                break-inside: avoid !important; 
             }
         }
     </style>
@@ -277,19 +247,14 @@
             <table class="tco-table">
                 <thead>
                     <tr>
-                        <th>✈️ Fleet Type</th>
+                        <th>✈️ Aircraft Registration</th>
                         <th>🇦🇪 UAE TCO Status</th>
                         <th>🇬🇧 UK TCO Status</th>
                         <th>🇪🇺 EU TCO Status</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td><strong id="tco-fleet-name">-</strong></td>
-                        <td id="tco-uae">-</td>
-                        <td id="tco-uk">-</td>
-                        <td id="tco-eu">-</td>
-                    </tr>
+                <tbody id="tco-table-body">
+                    <!-- الداتا هتتبني ديناميكياً بناء على الطائرات -->
                 </tbody>
             </table>
         </div>
@@ -349,22 +314,6 @@
     </div>
 </div>
 
-<div class="modal-overlay" id="print-guide-modal">
-    <div class="modal-content" style="width: 100%; max-width: 380px; text-align: center;">
-        <h2>🖨️ Print Fleet Report</h2>
-        <p style="font-size: 14px; line-height: 1.6; color: var(--text); margin-top: 15px;">
-            To secure the print layout in Google Sites, please use the keyboard shortcut:
-        </p>
-        <div style="background: #f1f5f9; padding: 12px; border-radius: 8px; font-size: 20px; font-weight: bold; letter-spacing: 1px; color: var(--primary); margin: 15px 0;">
-            Ctrl + P
-        </div>
-        <p style="font-size: 12px; color: #64748b;">(Or Cmd + P if you are using a Mac)</p>
-        <div class="modal-actions" style="margin-top: 25px; justify-content: flex-end;">
-            <button class="btn" style="background: var(--primary);" onclick="closePrintGuide()">Got it</button>
-        </div>
-    </div>
-</div>
-
 <div class="modal-overlay" id="form-modal">
     <div class="modal-content">
         <h2 id="modal-title">⚙️ Management & Fleet Control</h2>
@@ -401,20 +350,8 @@
                 <select id="form-station-select" onchange="loadStationOrTcoData()"></select>
             </div>
 
-            <div id="tco-edit-sub-section" style="display:none; background: #faf5ff; padding: 12px; border-radius: 8px; border: 1px dashed #d8b4fe;">
-                <p style="margin: 0 0 10px 0; font-weight: bold; color: #7c3aed; font-size:13px;">Update Fleet TCO Status:</p>
-                <div class="form-group">
-                    <label>UAE TCO Status:</label>
-                    <select id="form-tco-uae-input"><option value="">- Blank -</option><option value="OK">OK</option><option value="UNDER PROCESS">UNDER PROCESS</option></select>
-                </div>
-                <div class="form-group">
-                    <label>UK TCO Status:</label>
-                    <select id="form-tco-uk-input"><option value="">- Blank -</option><option value="OK">OK</option><option value="UNDER PROCESS">UNDER PROCESS</option></select>
-                </div>
-                <div class="form-group">
-                    <label>EU TCO Status:</label>
-                    <select id="form-tco-eu-input"><option value="">- Blank -</option><option value="OK">OK</option><option value="UNDER PROCESS">UNDER PROCESS</option></select>
-                </div>
+            <div id="tco-edit-sub-section" style="display:none; background: #faf5ff; padding: 12px; border-radius: 8px; border: 1px dashed #d8b4fe; max-height: 250px; overflow-y:auto;">
+                 <!-- حقول تعديل التيكو لكل طائرة هتتبني هنا ديناميكياً -->
             </div>
 
             <div id="station-fields-wrapper">
@@ -480,9 +417,48 @@
             let response = await fetch(API_URL);
             let cloudData = await response.json();
             
-            if (cloudData && cloudData.A359) {
-                if(!cloudData.A359.tco) cloudData.A359.tco = {uae:"", uk:"", eu:""};
-                if(!cloudData.B738M.tco) cloudData.B738M.tco = {uae:"", uk:"", eu:""};
+            if (cloudData && (cloudData.A359 || cloudData.B738M)) {
+                // 💡 كود الفلترة والإصلاح الجذري: لو لقى حروف "bma" القديمة المرفوعة على السيرفر هيصلحها لحروفك الحقيقية فوراً
+                if (cloudData.B738M && cloudData.B738M.aircrafts && cloudData.B738M.aircrafts.includes("bma")) {
+                    console.log("Old aircraft IDs detected on server. Rewriting with correct registrations...");
+                    cloudData.B738M.aircrafts = ["ggm", "ggn", "ggl"];
+                    cloudData.B738M.labels = {
+                        "ggm": { title: "SU-GGM", color: "#6366f1" },
+                        "ggn": { title: "SU-GGN", color: "#8b5cf6" },
+                        "ggl": { title: "SU-GGL", color: "#38bdf8" }
+                    };
+                    
+                    // تحويل الداتا داخل صفوف المحطات من المفاتيح القديمة للجديدة للحفاظ على الـ ✔️
+                    if (cloudData.B738M.stations) {
+                        cloudData.B738M.stations.forEach(st => {
+                            if (st.hasOwnProperty("bma")) { st.ggm = st.bma; delete st.bma; }
+                            if (st.hasOwnProperty("bmb")) { st.ggn = st.bmb; delete st.bmb; }
+                            if (st.hasOwnProperty("bmc")) { st.ggl = st.bmc; delete st.bmc; }
+                        });
+                    }
+                }
+
+                // بناء الـ tco_tracks المعتمد على الطائرات
+                ["A359", "B738M"].forEach(fleet => {
+                    if (cloudData[fleet]) {
+                        if (!cloudData[fleet].tco_tracks) {
+                            cloudData[fleet].tco_tracks = {};
+                            if (cloudData[fleet].tco && cloudData[fleet].aircrafts) {
+                                cloudData[fleet].aircrafts.forEach(plane => {
+                                    cloudData[fleet].tco_tracks[plane] = {
+                                        uae: cloudData[fleet].tco.uae || "",
+                                        uk: cloudData[fleet].tco.uk || "",
+                                        eu: cloudData[fleet].tco.eu || ""
+                                    };
+                                });
+                            }
+                        }
+                        if(!cloudData[fleet].stations) cloudData[fleet].stations = [];
+                        if(!cloudData[fleet].aircrafts) cloudData[fleet].aircrafts = [];
+                        if(!cloudData[fleet].labels) cloudData[fleet].labels = {};
+                    }
+                });
+
                 fleetData = cloudData;
                 showSyncStatus("☁️ Cloud DB Connected", "#dcfce7", "#15803d");
             } else {
@@ -555,8 +531,9 @@
         closeModal();
     }
 
-    function triggerPrintGuide() { window.print(); }
-    function closePrintGuide() { document.getElementById('print-guide-modal').style.display = 'none'; }
+    function triggerPrintGuide() { 
+        window.print(); 
+    }
 
     function switchFleet(fleetCode) {
         currentFleet = fleetCode;
@@ -582,20 +559,36 @@
     function buildStatsCards() {
         const container = document.getElementById('stats-container'); container.innerHTML = '';
         const f = fleetData[currentFleet];
+        if(!f || !f.aircrafts) return;
         f.aircrafts.forEach(plane => {
             const card = document.createElement('div'); card.className = `stat-card card-${plane}`;
-            card.style.borderRightColor = f.labels[plane].color;
-            card.innerHTML = `<h3>${f.labels[plane].title} Approved Stations</h3><div class="stat-number" id="count-${plane}">0</div>`;
+            card.style.borderRightColor = f.labels[plane]?.color || "#cbd5e1";
+            card.innerHTML = `<h3>${f.labels[plane]?.title || plane.toUpperCase()} Approved Stations</h3><div class="stat-number" id="count-${plane}">0</div>`;
             container.appendChild(card);
         });
     }
 
     function renderTcoTable() {
+        const tbody = document.getElementById('tco-table-body');
+        tbody.innerHTML = '';
         const f = fleetData[currentFleet];
-        document.getElementById('tco-fleet-name').innerText = f.title;
-        document.getElementById('tco-uae').innerHTML = getTcoBadgeMarkup(f.tco?.uae || "");
-        document.getElementById('tco-uk').innerHTML = getTcoBadgeMarkup(f.tco?.uk || "");
-        document.getElementById('tco-eu').innerHTML = getTcoBadgeMarkup(f.tco?.eu || "");
+        if(!f || !f.aircrafts) return;
+        
+        if (!f.tco_tracks) f.tco_tracks = {};
+
+        f.aircrafts.forEach(plane => {
+            const planeTco = f.tco_tracks[plane] || { uae: "", uk: "", eu: "" };
+            const planeTitle = f.labels[plane]?.title || plane.toUpperCase();
+            
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${planeTitle}</strong></td>
+                <td>${getTcoBadgeMarkup(planeTco.uae)}</td>
+                <td>${getTcoBadgeMarkup(planeTco.uk)}</td>
+                <td>${getTcoBadgeMarkup(planeTco.eu)}</td>
+            `;
+            tbody.appendChild(tr);
+        });
     }
 
     function getTcoBadgeMarkup(val) {
@@ -608,22 +601,30 @@
         const headerRow = document.getElementById('table-header-row');
         headerRow.innerHTML = '<th>Geographic Region</th><th>Station</th>';
         const f = fleetData[currentFleet];
+        if(!f || !f.aircrafts) return;
         f.aircrafts.forEach(plane => {
-            headerRow.innerHTML += `<th class="col-${plane}">${f.labels[plane].title}</th>`;
+            headerRow.innerHTML += `<th class="col-${plane}">${f.labels[plane]?.title || plane.toUpperCase()}</th>`;
         });
     }
 
     function buildAircraftFilterDropdown() {
         const filter = document.getElementById('aircraft-filter'); filter.innerHTML = '<option value="all">All Aircrafts</option>';
-        fleetData[currentFleet].aircrafts.forEach(plane => {
-            filter.innerHTML += `<option value="${plane}">${fleetData[currentFleet].labels[plane].title}</option>`;
+        const f = fleetData[currentFleet];
+        if(!f || !f.aircrafts) return;
+        f.aircrafts.forEach(plane => {
+            filter.innerHTML += `<option value="${plane}">${f.labels[plane]?.title || plane.toUpperCase()}</option>`;
         });
     }
 
     function renderTableRows() {
         const tbody = document.getElementById('table-body'); tbody.innerHTML = '';
         const f = fleetData[currentFleet];
-        f.stations.forEach((row) => {
+        if(!f || !f.stations) return;
+
+        // 💡 ترتيب المحطات بناءً على الإقليم الجغرافي أوتوماتيكياً قبل الرسم
+        const sortedStations = [...f.stations].sort((a, b) => a.region.localeCompare(b.region));
+
+        sortedStations.forEach((row) => {
             const tr = document.createElement('tr'); tr.setAttribute('data-region', row.region);
             let html = `<td><strong>${row.region}</strong></td><td><code>${row.station}</code></td>`;
             f.aircrafts.forEach(plane => { html += `<td class="cell-${plane}">${getBadgeMarkup(row[plane] || "")}</td>`; });
@@ -645,6 +646,7 @@
         document.getElementById('modal-title').innerText = `⚙️ ${fleetData[currentFleet].title} Control Panel`;
         buildDynamicStatusInputs(); populateStationDropdown(); populateAircraftRemovalDropdown(); handleManagementTypeChange();
     }
+    
     function closeModal() { document.getElementById('form-modal').style.display = 'none'; }
 
     function handleManagementTypeChange() {
@@ -672,15 +674,17 @@
 
     function buildDynamicStatusInputs() {
         const container = document.getElementById('dynamic-status-inputs'); container.innerHTML = '';
-        fleetData[currentFleet].aircrafts.forEach(plane => {
-            container.innerHTML += `<div class="form-group"><label>${fleetData[currentFleet].labels[plane].title}:</label>
+        const f = fleetData[currentFleet];
+        if(!f || !f.aircrafts) return;
+        f.aircrafts.forEach(plane => {
+            container.innerHTML += `<div class="form-group"><label>${f.labels[plane]?.title || plane.toUpperCase()}:</label>
                 <select id="form-input-${plane}"><option value="">- Blank -</option><option value="✔️">✔️ Approved</option><option value="Under Processed">Under Processed</option></select></div>`;
         });
     }
 
     function populateStationDropdown() {
         const select = document.getElementById('form-station-select'); select.innerHTML = '';
-        select.innerHTML += `<option value="TCO_MANAGEMENT">⭐ --- Manage TCO Approvals ---</option>`;
+        select.innerHTML += `<option value="TCO_MANAGEMENT">⭐ --- Manage TCO Approvals (By Aircraft) ---</option>`;
         select.innerHTML += `<option value="ADD_NEW_STATION_MODE">+ Add New Station Mode</option>`;
 
         if(fleetData[currentFleet] && fleetData[currentFleet].stations) {
@@ -692,36 +696,67 @@
 
     function populateAircraftRemovalDropdown() {
         const select = document.getElementById('remove-aircraft-select'); select.innerHTML = '';
-        fleetData[currentFleet].aircrafts.forEach(plane => {
-            select.innerHTML += `<option value="${plane}">${fleetData[currentFleet].labels[plane].title}</option>`;
+        const f = fleetData[currentFleet];
+        if(!f || !f.aircrafts) return;
+        f.aircrafts.forEach(plane => {
+            select.innerHTML += `<option value="${plane}">${f.labels[plane]?.title || plane.toUpperCase()}</option>`;
         });
     }
 
     function loadStationOrTcoData() {
         const target = document.getElementById('form-station-select').value;
         const f = fleetData[currentFleet];
+        const tcoSub = document.getElementById('tco-edit-sub-section');
 
         if(target === "TCO_MANAGEMENT") {
-            document.getElementById('tco-edit-sub-section').style.display = 'block';
+            tcoSub.style.display = 'block';
             document.getElementById('station-fields-wrapper').style.display = 'none';
             document.getElementById('btn-delete-station').style.display = 'none';
             
-            document.getElementById('form-tco-uae-input').value = f.tco?.uae || "";
-            document.getElementById('form-tco-uk-input').value = f.tco?.uk || "";
-            document.getElementById('form-tco-eu-input').value = f.tco?.eu || "";
+            tcoSub.innerHTML = '<p style="margin: 0 0 10px 0; font-weight: bold; color: #7c3aed; font-size:13px;">Update Aircraft TCO Statuses:</p>';
+            if (!f.tco_tracks) f.tco_tracks = {};
+            
+            f.aircrafts.forEach(plane => {
+                const planeTco = f.tco_tracks[plane] || { uae: "", uk: "", eu: "" };
+                const planeTitle = f.labels[plane]?.title || plane.toUpperCase();
+                
+                tcoSub.innerHTML += `
+                    <div style="background: #fff; padding: 10px; border-radius: 6px; margin-bottom: 10px; border: 1px solid #e2e8f0;">
+                        <span style="font-weight: bold; color: var(--primary);">${planeTitle}</span>
+                        <div class="form-group" style="margin-top:5px;">
+                            <label>UAE TCO:</label>
+                            <select id="form-tco-uae-${plane}"><option value="">- Blank -</option><option value="OK">OK</option><option value="UNDER PROCESS">UNDER PROCESS</option></select>
+                        </div>
+                        <div class="form-group">
+                            <label>UK TCO:</label>
+                            <select id="form-tco-uk-${plane}"><option value="">- Blank -</option><option value="OK">OK</option><option value="UNDER PROCESS">UNDER PROCESS</option></select>
+                        </div>
+                        <div class="form-group">
+                            <label>EU TCO:</label>
+                            <select id="form-tco-eu-${plane}"><option value="">- Blank -</option><option value="OK">OK</option><option value="UNDER PROCESS">UNDER PROCESS</option></select>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            f.aircrafts.forEach(plane => {
+                const planeTco = f.tco_tracks[plane] || { uae: "", uk: "", eu: "" };
+                document.getElementById(`form-tco-uae-${plane}`).value = planeTco.uae;
+                document.getElementById(`form-tco-uk-${plane}`).value = planeTco.uk;
+                document.getElementById(`form-tco-eu-${plane}`).value = planeTco.eu;
+            });
         } 
         else if (target === "ADD_NEW_STATION_MODE") {
-            document.getElementById('tco-edit-sub-section').style.display = 'none';
+            tcoSub.style.display = 'none';
             document.getElementById('station-fields-wrapper').style.display = 'block';
             document.getElementById('station-input-group').style.display = 'flex';
             document.getElementById('btn-delete-station').style.display = 'none';
             document.getElementById('form-mode').value = 'add';
-            
             document.getElementById('form-station-name').value = "";
             f.aircrafts.forEach(plane => { document.getElementById(`form-input-${plane}`).value = ""; });
         }
         else {
-            document.getElementById('tco-edit-sub-section').style.display = 'none';
+            tcoSub.style.display = 'none';
             document.getElementById('station-fields-wrapper').style.display = 'block';
             document.getElementById('station-input-group').style.display = 'none';
             document.getElementById('btn-delete-station').style.display = 'inline-block';
@@ -776,10 +811,14 @@
             const target = document.getElementById('form-station-select').value;
 
             if(target === "TCO_MANAGEMENT") {
-                if(!f.tco) f.tco = {};
-                f.tco.uae = document.getElementById('form-tco-uae-input').value;
-                f.tco.uk = document.getElementById('form-tco-uk-input').value;
-                f.tco.eu = document.getElementById('form-tco-eu-input').value;
+                if(!f.tco_tracks) f.tco_tracks = {};
+                f.aircrafts.forEach(plane => {
+                    f.tco_tracks[plane] = {
+                        uae: document.getElementById(`form-tco-uae-${plane}`).value,
+                        uk: document.getElementById(`form-tco-uk-${plane}`).value,
+                        eu: document.getElementById(`form-tco-eu-${plane}`).value
+                    };
+                });
             } 
             else {
                 const mode = document.getElementById('form-mode').value; const region = document.getElementById('form-region').value;
@@ -830,7 +869,11 @@
             A359: {
                 title: "Airbus A350-900", aircrafts: ["gge", "ggh", "ggi"],
                 labels: { "gge": { title: "SU-GGE", color: "#ec4899" }, "ggh": { title: "SU-GGH", color: "#10b981" }, "ggi": { title: "SU-GGI", color: "#f59e0b" } },
-                tco: { uae: "OK", uk: "UNDER PROCESS", eu: "OK" },
+                tco_tracks: {
+                    "gge": { uae: "OK", uk: "OK", eu: "OK" },
+                    "ggh": { uae: "OK", uk: "UNDER PROCESS", eu: "OK" },
+                    "ggi": { uae: "UNDER PROCESS", uk: "", eu: "UNDER PROCESS" }
+                },
                 stations: [
                     {region:"Middle East", station:"DXB", gge:"✔️", ggh:"✔️", ggi:"✔️"}, {region:"Middle East", station:"JED", gge:"✔️", ggh:"✔️", ggi:"✔️"},
                     {region:"Middle East", station:"RUH", gge:"✔️", ggh:"✔️", ggi:"✔️"}, {region:"Middle East", station:"AMM", gge:"✔️", ggh:"✔️", ggi:"✔️"},
@@ -846,17 +889,25 @@
                 ]
             },
             B738M: {
-                title: "Boeing 737-8 MAX", aircrafts: ["bma", "bmb", "bmc"],
-                labels: { "bma": { title: "SU-BMA", color: "#6366f1" }, "bmb": { title: "SU-BMB", color: "#8b5cf6" }, "bmc": { title: "SU-BMC", color: "#38bdf8" } },
-                tco: { uae: "UNDER PROCESS", uk: "", eu: "UNDER PROCESS" },
+                title: "Boeing 737-8 MAX", aircrafts: ["ggm", "ggn", "ggl"],
+                labels: { 
+                    "ggm": { title: "SU-GGM", color: "#6366f1" }, 
+                    "ggn": { title: "SU-GGN", color: "#8b5cf6" }, 
+                    "ggl": { title: "SU-GGL", color: "#38bdf8" } 
+                },
+                tco_tracks: {
+                    "ggm": { uae: "UNDER PROCESS", uk: "", eu: "UNDER PROCESS" },
+                    "ggn": { uae: "", uk: "", eu: "" },
+                    "ggl": { uae: "", uk: "", eu: "" }
+                },
                 stations: [
-                    {region:"Middle East", station:"CAI", bma:"✔️", bmb:"✔️", bmc:"✔️"}, {region:"Middle East", station:"RUH", bma:"✔️", bmb:"✔️", bmc:""},
-                    {region:"Middle East", station:"JED", bma:"✔️", bmb:"Under Processed", bmc:""}, {region:"Middle East", station:"MED", bma:"✔️", bmb:"", bmc:""},
-                    {region:"Middle East", station:"DMM", bma:"✔️", bmb:"", bmc:""}, {region:"Middle East", station:"MCT", bma:"✔️", bmb:"", bmc:""},
-                    {region:"Europe", station:"ATH", bma:"✔️", bmb:"✔️", bmc:""}, {region:"Europe", station:"FCO", bma:"✔️", bmb:"", bmc:""},
-                    {region:"Europe", station:"MXP", bma:"✔️", bmb:"", bmc:""}, {region:"Europe", station:"VIE", bma:"✔️", bmb:"", bmc:""},
-                    {region:"Europe", station:"BRU", bma:"✔️", bmb:"", bmc:""}, {region:"Africa", station:"ADD", bma:"✔️", bmb:"", bmc:""},
-                    {region:"Africa", station:"KRT", bma:"Under Processed", bmb:"", bmc:""}, {region:"Africa", station:"NBO", bma:"✔️", bmb:"", bmc:""}
+                    {region:"Middle East", station:"CAI", ggm:"✔️", ggn:"✔️", ggl:"✔️"}, {region:"Middle East", station:"RUH", ggm:"✔️", ggn:"✔️", ggl:""},
+                    {region:"Middle East", station:"JED", ggm:"✔️", ggn:"Under Processed", ggl:""}, {region:"Middle East", station:"MED", ggm:"✔️", ggn:"", ggl:""},
+                    {region:"Middle East", station:"DMM", ggm:"✔️", ggn:"", ggl:""}, {region:"Middle East", station:"MCT", ggm:"✔️", ggn:"", ggl:""},
+                    {region:"Europe", station:"ATH", ggm:"✔️", ggn:"✔️", ggl:""}, {region:"Europe", station:"FCO", ggm:"✔️", ggn:"", ggl:""},
+                    {region:"Europe", station:"MXP", ggm:"✔️", ggn:"", ggl:""}, {region:"Europe", station:"VIE", ggm:"✔️", ggn:"", ggl:""},
+                    {region:"Europe", station:"BRU", ggm:"✔️", ggn:"", ggl:""}, {region:"Africa", station:"ADD", ggm:"✔️", ggn:"", ggl:""},
+                    {region:"Africa", station:"KRT", ggm:"Under Processed", ggn:"", ggl:""}, {region:"Africa", station:"NBO", ggm:"✔️", ggn:"", ggl:""}
                 ]
             }
         };
