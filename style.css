@@ -1,0 +1,452 @@
+
+        @keyframes ping {
+    75%, 100% {
+        transform: scale(2.5);
+        opacity: 0;
+    }
+}
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+        :root {
+            --primary: #0f172a;
+            --accent: #0284c7;
+            --success: #22c55e;
+            --warning: #eab308;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #334155;
+            --danger: #ef4444;
+            --tab-inactive: #e2e8f0;
+        }
+        
+        html, body {
+            height: auto;
+            min-height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        body {
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        .container { 
+            max-width: 1300px; 
+            margin: 0 auto; 
+            width: 100%;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+        header h1 { margin: 0; font-size: 24px; }
+        .header-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .btn {
+    color: white; 
+    border: 1px solid transparent; 
+    padding: 10px 18px; 
+    border-radius: 6px; /* حواف هادية ومتماشية مع كروت الـ Approved */
+    cursor: pointer; 
+    font-weight: 600; 
+    font-size: 13px; 
+    letter-spacing: 0.3px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); /* أنيميشن ناعم وسريع */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* زرار الطباعة السريع (أزرق بريميوم) */
+.btn-print { 
+    background: #0284c7; 
+}
+.btn-print:hover { 
+    background: #0369a1; 
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(2, 132, 199, 0.2);
+}
+
+/* زرار تسجيل الدخول (أخضر هادي) */
+.btn-admin { 
+    background: #10b981; 
+}
+.btn-admin:hover { 
+    background: #059669; 
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);
+}
+
+/* زرار لوحة التحكم (بنفسجي غامق فخم) */
+.btn-manage { 
+    background: #4f46e5; 
+}
+.btn-manage:hover { 
+    background: #4338ca; 
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+}
+
+/* زرار القفل (أحمر ناعم) */
+.btn-lock { 
+    background: #ef4444; 
+}
+.btn-lock:hover { 
+    background: #dc2626; 
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.2);
+}
+
+/* زرار تصفير الفلاتر (رمادي شيك متناسق مع الخلفية) */
+#btn-clear-filters {
+    background: #ffffff !important;
+    color: #475569 !important;
+    border: 1px solid #cbd5e1 !important;
+}
+#btn-clear-filters:hover {
+    background: #f8fafc !important;
+    color: #1e293b !important;
+    border-color: #94a3b8 !important;
+    transform: translateY(-1px);
+}
+
+/* تأثير عند الضغط على أي زرار (Click Effect) */
+.btn:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+        .btn-print { background: var(--accent); }
+        .btn-admin { background: var(--success); }
+        .btn-lock { background: var(--danger); display: none; }
+        .btn-manage { background: #6366f1; display: none; }
+        
+        #sync-status {
+            font-size: 13px; font-weight: bold; color: #64748b;
+            background: #e2e8f0; padding: 6px 12px; border-radius: 20px; display: flex; align-items: center; gap: 6px;
+        }
+
+        .fleet-tabs { display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 3px solid var(--primary); padding-bottom: 2px; overflow-x: auto; }
+        /* الوضع الطبيعي للزرار (التاب غير النشطة) */
+/* الوضع الطبيعي للزرار (التاب غير النشطة) */
+.tab-btn {
+    padding: 12px 24px; 
+    font-size: 15px; 
+    font-weight: 600; 
+    border: 1px solid #cbd5e1; /* بوردر خفيف يحدد التاب */
+    border-bottom: none;
+    border-top-left-radius: 8px; 
+    border-top-right-radius: 8px; 
+    cursor: pointer;
+    background: #e2e8f0; 
+    color: #64748b; 
+    white-space: nowrap;
+    
+    /* أنيميشن مطاطي ناعم للتكبير والتنوير في نفس الوقت */
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* 💡 تأثير التكبير والتنوير (Zoom & Glow) لما الماوس ييجي على التاب */
+.tab-btn:hover:not(.active) {
+    background: #f1f5f9; /* تفتح تكة */
+    color: #0f172a; 
+    border-color: #38bdf8; /* البوردر ينور لبني */
+    
+    /* الحركة السحرية: تكبير بنسبة 5% */
+    transform: scale(1.05); 
+    
+    /* التنوير (Glow): ظل لبني منور وناعم حوالين التاب */
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.4), 0 -4px 6px rgba(56, 189, 248, 0.1);
+    
+    z-index: 5; /* لضمان إن التاب اللي بتكبر تطلع فوق التاب التانية متبقاش مستخبية وراها */
+}
+
+/* 💡 التاب النشطة (المختارة حالياً) */
+.tab-btn.active { 
+    background: #0f172a; 
+    color: #ffffff; 
+    border-color: #0f172a;
+    transform: scale(1); /* ترجع لحجمها الطبيعي لما تثبت */
+    
+    /* تنوير بلون داكن فخم يدمجها مع الهيدر */
+    box-shadow: 0 -4px 12px rgba(15, 23, 42, 0.2);
+    z-index: 2;
+}
+
+/* تأثير الضغط اللحظي كليك */
+.tab-btn:active {
+    transform: scale(0.98);
+}
+        .tab-btn.active { background: var(--primary); color: white; }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 25px; }
+        /* الكارت في الوضع الطبيعي */
+.stat-card { 
+    background: var(--card-bg); 
+    padding: 20px; 
+    border-radius: 12px; 
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.02); 
+    border-right: 5px solid var(--accent); 
+    
+    /* الأنيميشن السحري: بيخلي أي تغيير يحصل في 0.3 ثانية بنعومة فائقة */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    top: 0;
+    cursor: default;
+}
+
+/* تأثير حركة الماوس على الكروت (Hover Effect) */
+/* تأثير حركة الماوس على الكروت (Hover Effect) */
+.stat-card:hover {
+    transform: translateY(-6px); /* الكارت يترفع لفوق بسلاسة */
+    box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.08), 0 8px 8px -5px rgba(0, 0, 0, 0.04); /* الظل يكبر */
+    
+    /* 💡 التعديل المقصود: خلفية الكارت تغمق تكة صغيرة جداً ونظيفة */
+    background-color: #f8fafc !important; 
+}
+
+/* حركة إضافية: تزهزه وتنوير العداد جوه الكارت لما تقف عليه */
+.stat-card:hover .stat-number {
+    transform: scale(1.05);
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* تعديل خفيف على العداد عشان يقبل الأنيميشن */
+.stat-number { 
+    font-size: 28px; 
+    font-weight: bold; 
+    color: var(--primary); 
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+        .stat-card h3 { margin: 0 0 10px 0; color: #64748b; font-size: 14px; }
+        .stat-number { font-size: 28px; font-weight: bold; color: var(--primary); }
+
+        .tco-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+            border-left: 5px solid #6366f1;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .tco-section h2 { 
+    margin: 0 0 12px 0; 
+    font-size: 16px; 
+    color: var(--primary); 
+    
+    /* 💡 التعديل السحري لتوسيط العنوان مع الإيموجي في النص بالظبط */
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 8px; 
+}
+        .tco-table-wrapper { width: 100%; overflow-x: auto; }
+        .tco-table { width: 100%; border-collapse: collapse; text-align: left; min-width: 600px; }
+        .tco-table th, .tco-table td { padding: 10px 15px; border-bottom: 1px solid #e2e8f0; white-space: nowrap; }
+        .tco-table th { background-color: #f8fafc; color: #475569; font-size: 13px; font-weight: 600; }
+        .tco-badge { font-weight: bold; padding: 4px 10px; border-radius: 6px; display: inline-block; font-size: 14px; white-space: nowrap; }
+        .tco-badge.ok { color: var(--success); background: #dcfce7; border: 1px solid #bbf7d0; }
+        .tco-badge.pending { color: #b45309; background: #fef9c3; border: 1px solid #fef08a; }
+        .tco-badge.blank { color: #94a3b8; background: #f1f5f9; }
+
+        .controls { background: var(--card-bg); padding: 15px; border-radius: 12px; margin-bottom: 25px; display: flex; flex-wrap: wrap; gap: 20px; align-items: center; box-shadow: 0 1px 3px rgb(0 0 0 / 0.1); }
+        .filter-group { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 200px; }
+        .filter-group label { white-space: nowrap; font-weight: bold; }
+        select, input[type="text"], input[type="password"] { padding: 8px 16px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 14px; outline: none; width: 100%; box-sizing: border-box; }
+
+        .table-container { 
+    background: var(--card-bg); 
+    border-radius: 12px; 
+    overflow: auto; /* تغيير من overflow-x لـ auto */
+    max-height: 70vh; /* تحديد أقصى ارتفاع مريح للعين */
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.1); 
+    width: 100%;
+    flex: 1; 
+    margin-bottom: 20px;
+}
+        table { width: 100%; border-collapse: collapse; text-align: left; min-width: 700px; }
+        th, td { padding: 14px 20px; border-bottom: 1px solid #e2e8f0; white-space: nowrap; text-align: center !important;}
+        th { background-color: #f1f5f9; color: var(--primary); font-weight: 600; position: sticky; TOP: 0; z-index: 10; BOXSHADOW: 0 2px 4px rgb(0 0 0 / 0.1);BOX-SHADOW: 0 2px 2px -1px rgba(0,0,0,0.1); }
+        tr:hover { background-color: #f8fafc; }
+        
+        td code {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--primary);
+            background-color: #f1f5f9;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-family: inherit;
+        }
+
+        .status-badge { font-weight: bold; padding: 4px 8px; border-radius: 4px; display: inline-block; }
+        .status-badge.approved { color: var(--success); }
+        .status-badge.pending { color: var(--warning); background: #fef9c3; }
+        .status-badge.blank { color: #cbd5e1; }
+
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; padding: 15px; box-sizing: border-box; }
+        .modal-content { background: white; padding: 25px; border-radius: 12px; width: 100%; max-width: 480px; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); max-height: 90vh; overflow-y: auto; box-sizing: border-box; }
+        .modal-content h2 { margin-top: 0; color: var(--primary); font-size: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;}
+        .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 15px; }
+        .form-group label { font-weight: bold; color: #475569; font-size: 14px; }
+        .modal-actions { display: flex; justify-content: space-between; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+        .dynamic-statuses { background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px dashed #cbd5e1; margin-top: 10px; }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            header { flex-direction: column; text-align: center; gap: 15px; padding: 15px; }
+            header h1 { font-size: 20px; }
+            .header-actions { justify-content: center; width: 100%; }
+            .btn { width: 100%; text-align: center; padding: 8px 16px; font-size: 13px; }
+            .btn-print { display: none !important; }
+            #sync-status { width: 100%; justify-content: center; box-sizing: border-box; font-size: 12px; }
+            .controls { padding: 10px; gap: 12px; margin-bottom: 15px; }
+            .filter-group { min-width: 100%; flex-direction: column; align-items: flex-start; gap: 4px; font-size: 13px; }
+            th, td { padding: 8px 12px; font-size: 13px; }
+            .tco-section { padding: 10px; margin-bottom: 15px; }
+            .tco-section h2 { font-size: 14px; margin-bottom: 8px; }
+            .tco-table th { padding: 6px 8px; font-size: 11px; }
+            .tco-table td { padding: 6px 8px; font-size: 12px; }
+            .tco-badge { font-size: 11px; padding: 2px 6px; border-radius: 4px; }
+            td code { font-size: 13px; padding: 3px 6px; border-radius: 4px; }
+            .status-badge { font-size: 12px; padding: 3px 6px; }
+            .modal-content { padding: 15px; }
+            .modal-actions { flex-direction: column-reverse; }
+            .modal-actions div { width: 100%; }
+            .modal-actions .btn { margin-top: 5px; }
+        }
+
+        @media print {
+            html, body, .container { 
+                display: block !important; 
+                height: auto !important; 
+                min-height: 0 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                overflow: visible !important;
+            }
+            .controls, .btn, header p, .modal-overlay, .fleet-tabs, #sync-status, .tco-section h2 { 
+                display: none !important; 
+            }
+            header { 
+                background: #0f172a !important; 
+                color: white !important; 
+                border-radius: 0; 
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact; 
+            }
+            .stat-card { 
+                border: 1px solid #cbd5e1 !important; 
+                box-shadow: none !important; 
+                background: #fff !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .table-container {
+                overflow: visible !important;
+                box-shadow: none !important;
+                display: block !important;
+            }
+            table, .tco-table { 
+                font-size: 12px; 
+                width: 100% !important; 
+                table-layout: auto !important;
+            }
+            th, td { 
+                white-space: normal !important; 
+                word-wrap: break-word !important;
+            }
+            tr { 
+                page-break-inside: avoid !important; 
+                break-inside: avoid !important; 
+            }
+        }
+
+        /* حاوية المنيو */
+.menu-container {
+    position: relative;
+    display: inline-block;
+}
+
+/* زرار الـ 3 شرط الفخم */
+.menu-toggle-btn {
+    background: #1e293b;
+    color: #f8fafc;
+    border: 1px solid #334155;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+.menu-toggle-btn:hover {
+    background: #334155;
+    border-color: #475569;
+}
+
+/* القائمة المنسدلة المستخفية */
+.dropdown-menu {
+    display: none; /* مخفية أوتوماتيك */
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 8px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 180px;
+}
+
+/* تعديل ستايل الأزرار القديمة عشان تقعد جوه المنيو بشكل طولي شيك */
+.dropdown-menu .btn {
+    width: 100%;
+    text-align: left;
+    box-sizing: border-box;
+    padding: 10px 14px;
+}
+
+/* إظهار المنيو لما تاخد كلاس active */
+.dropdown-menu.active {
+    display: flex;
+    animation: menuFadeIn 0.2s ease;
+}
+
+@keyframes menuFadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ⚠️ إلغاء إخفاء زرار الطباعة في الموبايل طالما بقى جوه منيو مستورة */
+@media (max-width: 768px) {
+    .btn-print { display: inline-flex !important; }
+}
+   

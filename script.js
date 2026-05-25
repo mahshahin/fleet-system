@@ -1,212 +1,4 @@
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EGYPTAIR Fleet Dashboard (Hybrid Cloud/Offline)</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-<div class="container">
-    <header>
-        <div>
-            <h1>EGYPTAIR - Fleet Station Approval Control Panel</h1>
-            <p id="fleet-subtitle" style="margin: 5px 0 0 0; opacity: 0.8;">Active Fleet: Airbus A350-900 Dashboard</p>
-        </div>
-        <div class="header-actions">
-    <div id="sync-status">🔄 Connecting to Cloud DB...</div>
-    
-    <div class="menu-container">
-        <button class="menu-toggle-btn" onclick="event.stopPropagation(); document.getElementById('dropdown-menu').classList.toggle('active');">☰ Menu</button>
-        
-        <div class="dropdown-menu" id="dropdown-menu">
-            <button class="btn btn-manage" id="manage-btn" onclick="document.getElementById('dropdown-menu').classList.remove('active'); openModal()">⚙️ Control Panel</button>
-    
-            <button class="btn btn-admin" id="admin-btn" onclick="document.getElementById('dropdown-menu').classList.remove('active'); openPasswordModal()">🔒 Admin Login</button>
-    
-            <button class="btn btn-lock" id="lock-btn" onclick="document.getElementById('dropdown-menu').classList.remove('active'); lockDashboard()">🔓 Lock Changes</button>
-    
-            <button class="btn btn-print" onclick="document.getElementById('dropdown-menu').classList.remove('active'); triggerPrintGuide()">🖨️ Print Fleet Report</button>
-        </div>
-    </div>
-</div>
-    </header>
-
-    <div class="fleet-tabs">
-        <button class="tab-btn active" id="tab-A359" onclick="switchFleet('A359')">Airbus A350-900</button>
-        <button class="tab-btn" id="tab-B738M" onclick="switchFleet('B738M')">Boeing 737-8 MAX</button>
-    </div>
-
-    <div class="stats-grid" id="stats-container"></div>
-
-    <div class="tco-section">
-        <h2>📋 Third Country Operator (TCO) Requirements</h2>
-        <div class="tco-table-wrapper">
-            <table class="tco-table">
-                <thead>
-                    <tr>
-                        <th>✈️ Aircraft Registration</th>
-                        <th>🇦🇪 UAE TCO Status</th>
-                        <th>🇬🇧 UK TCO Status</th>
-                        <th>🇪🇺 EU TCO Status</th>
-                    </tr>
-                </thead>
-                <tbody id="tco-table-body">
-                    <!-- الداتا هتتبني ديناميكياً بناء على الطائرات -->
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div class="controls">
-        <div class="filter-group">
-            <label>Search Station:</label>
-            <input type="text" id="station-search-filter" onkeyup="filterTable()" placeholder="e.g. DXB, LHR...">
-        </div>
-        <div class="filter-group">
-            <label>Region:</label>
-            <select id="region-filter" onchange="filterTable()">
-                <option value="all">All Regions</option>
-                <option value="Europe">Europe</option>
-                <option value="America">America</option>
-                <option value="Far East">Far East</option>
-                <option value="Africa">Africa</option>
-                <option value="Middle East">Middle East</option>
-            </select>
-        </div>
-        <div class="filter-group">
-            <label>Aircraft Registration:</label>
-            <select id="aircraft-filter" onchange="filterTable()"><option value="all">All Aircrafts</option></select>
-        </div>
-        <div class="filter-group">
-            <label>Status:</label>
-            <select id="status-filter" onchange="filterTable()">
-                <option value="all">All Statuses</option>
-                <option value="✔️">Approved (✔️)</option>
-                <option value="Under Processed">Under Processed</option>
-                <option value="">Blank (Remaining)</option>
-            </select>
-        </div>
-    </div>
-
-    <div class="table-container">
-        <table id="stations-table">
-            <thead><tr id="table-header-row"><th>Geographic Region</th><th>Station</th></tr></thead>
-            <tbody id="table-body"></tbody>
-        </table>
-    </div>
-</div>
-
-<div class="modal-overlay" id="password-modal">
-    <div class="modal-content" style="width: 100%; max-width: 350px;">
-        <h2>🔒 Security Verification</h2>
-        <div class="form-group" style="margin-top: 15px;">
-            <label>Enter Admin Password:</label>
-            <input type="password" id="admin-password-input" placeholder="••••" style="text-align: center; font-size: 18px; letter-spacing: 4px;">
-            <p id="password-error-msg" style="color: var(--danger); font-size: 12px; margin: 5px 0 0 0; display: none; font-weight: bold;">❌ Wrong password! Access denied.</p>
-        </div>
-        <div class="modal-actions" style="margin-top: 25px; justify-content: flex-end; gap: 10px;">
-            <button class="btn" style="background:#64748b;" onclick="closePasswordModal()">Cancel</button>
-            <button class="btn" style="background:var(--success);" onclick="verifyAdminPassword()">Unlock</button>
-        </div>
-    </div>
-</div>
-
-<div class="modal-overlay" id="form-modal">
-    <div class="modal-content">
-        <h2 id="modal-title">⚙️ Management & Fleet Control</h2>
-        <div class="form-group">
-            <label>What do you want to do?</label>
-            <select id="management-type" onchange="handleManagementTypeChange()">
-                <option value="station">Manage Stations / TCO Approvals</option>
-                <option value="aircraft">Manage Fleet (Add / Remove Aircraft)</option>
-                <option value="backup">💾 System Data Backup (Manual Export / Import)</option>
-            </select>
-        </div>
-
-        <div id="aircraft-section" style="display: none; border-top: 2px solid #f1f5f9; padding-top: 15px;">
-            <div class="form-group">
-                <label>Action Mode:</label>
-                <select id="aircraft-mode" onchange="handleAircraftModeChange()">
-                    <option value="add">Add New Aircraft Registration</option>
-                    <option value="remove">Remove Existing Aircraft</option>
-                </select>
-            </div>
-            <div class="form-group" id="aircraft-input-group">
-                <label id="aircraft-input-label">New Aircraft Reg Code:</label>
-                <input type="text" id="new-aircraft-name" placeholder="Enter Registration Code">
-            </div>
-            <div class="form-group" id="aircraft-remove-group" style="display: none;">
-                <label>Select Aircraft to Remove:</label>
-                <select id="remove-aircraft-select"></select>
-            </div>
-        </div>
-
-        <div id="station-section" style="border-top: 2px solid #f1f5f9; padding-top: 15px;">
-            <div class="form-group">
-                <label>Select Target Item to Edit:</label>
-                <select id="form-station-select" onchange="loadStationOrTcoData()"></select>
-            </div>
-
-            <div id="tco-edit-sub-section" style="display:none; background: #faf5ff; padding: 12px; border-radius: 8px; border: 1px dashed #d8b4fe; max-height: 250px; overflow-y:auto;">
-                 <!-- حقول تعديل التيكو لكل طائرة هتتبني هنا ديناميكياً -->
-            </div>
-
-            <div id="station-fields-wrapper">
-                <div class="form-group" id="station-mode-container">
-                    <label>Action Mode:</label>
-                    <select id="form-mode" onchange="handleModeChange()">
-                        <option value="add">New Station (Add)</option>
-                        <option value="edit">Existing Station (Edit / Delete)</option>
-                    </select>
-                </div>
-                <div class="form-group" id="station-input-group">
-                    <label>Station Code (e.g. DXB):</label>
-                    <input type="text" id="form-station-name" placeholder="Enter Station Code">
-                </div>
-                <div class="form-group">
-                    <label>Geographic Region:</label>
-                    <select id="form-region">
-                        <option value="Middle East">Middle East</option>
-                        <option value="Europe">Europe</option>
-                        <option value="America">America</option>
-                        <option value="Far East">Far East</option>
-                        <option value="Africa">Africa</option>
-                    </select>
-                </div>
-                <div class="dynamic-statuses">
-                    <label style="font-weight: bold; font-size:13px; color:var(--accent);">Set Aircraft Approvals:</label>
-                    <div id="dynamic-status-inputs" style="margin-top: 8px;"></div>
-                </div>
-            </div>
-        </div>
-
-        <div id="backup-section" style="display: none; border-top: 2px solid #f1f5f9; padding-top: 15px;">
-            <p style="font-size: 13px; color:#475569; margin: 0 0 10px 0;">Offline Backup Tools:</p>
-            <div class="form-group" style="background:#f0fdf4; padding:12px; border-radius:8px; border:1px solid #bbf7d0;">
-                <label style="color:#16a34a;">📥 Export System Data</label>
-                <button class="btn" style="background:#16a34a; margin-top:5px; width:100%;" onclick="exportSystemData()">Download Backup File (.json)</button>
-            </div>
-            <div class="form-group" style="background:#eff6ff; padding:12px; border-radius:8px; border:1px solid #bfdbfe; margin-top:10px;">
-                <label style="color:#1d4ed8;">📤 Step 2: Import System Data</label>
-                <input type="file" id="import-file-input" accept=".json" style="margin-top:5px; font-size:12px;">
-                <button class="btn" style="background:#1d4ed8; margin-top:8px; width:100%;" onclick="importSystemData()">Upload & Restore Backup</button>
-            </div>
-        </div>
-
-        <div class="modal-actions" id="modal-footer-actions">
-            <div><button class="btn" id="btn-delete-station" style="background:var(--danger); display:none;" onclick="deleteStation()">🗑️ Delete Station</button></div>
-            <div style="display:flex; gap:10px;">
-                <button class="btn" style="background:#64748b;" onclick="closeModal()">Cancel</button>
-                <button class="btn" style="background:var(--success);" id="btn-save-form" onclick="saveManagementForm()">Save Changes</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbwG7q8kD0GotJ3tPmbu6Q9bgzkaihP1DeXVNeYuQoZtHh9q3lDZVFF_70ZTOP5TuSRxSA/exec"; 
+const API_URL = "https://script.google.com/macros/s/AKfycbwG7q8kD0GotJ3tPmbu6Q9bgzkaihP1DeXVNeYuQoZtHh9q3lDZVFF_70ZTOP5TuSRxSA/exec"; 
 
     let isAdmin = false; const ADMIN_PASSWORD = "1234"; let currentFleet = "A359"; let fleetData = {};
 
@@ -259,7 +51,7 @@
                 });
 
                 fleetData = cloudData;
-                showSyncStatus("☁️", "#dcfce7", "#15803d");
+                showSyncStatus("☁️ Cloud DB Connected", "#dcfce7", "#15803d");
             } else {
                 fleetData = getDefaultData();
                 await saveToCloud();
@@ -306,24 +98,9 @@
 
     function closePasswordModal() { document.getElementById('password-modal').style.display = 'none'; }
 
-    // دالة سحرية لتشفيير الباسورد قبل الفحص
-    async function sha256(string) {
-        const utf8 = new Uint8Array(Array.from(string).map(c => c.charCodeAt(0)));
-        const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-
-    async function verifyAdminPassword() {
+    function verifyAdminPassword() {
         const enteredPass = document.getElementById('admin-password-input').value;
-        
-        // تشفير الباسورد المدخلة
-        const enteredHash = await sha256(enteredPass);
-        
-        // المقارنة بتتم بين كودين مشفرين (مفيش أي باسورد صريحة في الكود هنا)
-        const SECURE_HASH = "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4"; // 
-
-        if (enteredHash === SECURE_HASH) {
+        if (enteredPass === ADMIN_PASSWORD) {
             isAdmin = true;
             document.getElementById('admin-btn').style.display = 'none';
             document.getElementById('lock-btn').style.display = 'inline-block';
@@ -406,27 +183,9 @@
     }
 
     function getTcoBadgeMarkup(val) {
-        if(val === 'OK') {
-            return `
-                <div style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 13px; color: #16a34a; letter-spacing: 0.5px; cursor: default;">
-                    <span style="position: relative; display: flex; height: 8px; width: 8px;">
-                        <span style="position: absolute; height: 100%; width: 100%; border-radius: 50%; background-color: #4ade80; opacity: 0.75; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
-                        <span style="position: relative; display: inline-flex; border-radius: 50%; height: 8px; width: 8px; background-color: #16a34a; box-shadow: 0 0 8px #22c55e;"></span>
-                    </span>
-                    OK
-                </div>`;
-        }
-        if(val === 'UNDER PROCESS') {
-            return `
-                <div style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 13px; color: #d97706; letter-spacing: 0.5px; cursor: default;">
-                    <span style="position: relative; display: flex; height: 8px; width: 8px;">
-                        <span style="position: absolute; height: 100%; width: 100%; border-radius: 50%; background-color: #fbbf24; opacity: 0.75; animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
-                        <span style="position: relative; display: inline-flex; border-radius: 50%; height: 8px; width: 8px; background-color: #d97706; box-shadow: 0 0 8px #f59e0b;"></span>
-                    </span>
-                    UNDER PROCESS
-                </div>`;
-        }
-        return `<span style="color: #cbd5e1; font-weight: 500; font-size: 14px;">—</span>`;
+        if(val === 'OK') return `<span class="tco-badge ok">✔️ OK</span>`;
+        if(val === 'UNDER PROCESS') return `<span class="tco-badge pending">⏳ UNDER PROCESS</span>`;
+        return `<span class="tco-badge blank">- Remaining -</span>`;
     }
 
     function buildTableHeaders() {
@@ -466,27 +225,9 @@
     }
 
     function getBadgeMarkup(value) {
-        if(value === '✔️') {
-            return `
-                <div style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 13px; color: #16a34a; letter-spacing: 0.5px; cursor: default;">
-                    <span style="position: relative; display: flex; h: 8px; w: 8px; height: 8px; width: 8px;">
-                        <span style="position: absolute; inline-size: 100%; height: 100%; width: 100%; border-radius: 50%; background-color: #4ade80; opacity: 0.75; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
-                        <span style="position: relative; display: inline-flex; border-radius: 50%; height: 8px; width: 8px; background-color: #16a34a; box-shadow: 0 0 8px #22c55e;"></span>
-                    </span>
-                    APPROVED
-                </div>`;
-        }
-        if(value === 'Under Processed') {
-            return `
-                <div style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 13px; color: #d97706; letter-spacing: 0.5px; cursor: default;">
-                    <span style="position: relative; display: flex; height: 8px; width: 8px;">
-                        <span style="position: absolute; height: 100%; width: 100%; border-radius: 50%; background-color: #fbbf24; opacity: 0.75; animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
-                        <span style="position: relative; display: inline-flex; border-radius: 50%; height: 8px; width: 8px; background-color: #d97706; box-shadow: 0 0 8px #f59e0b;"></span>
-                    </span>
-                    UNDER PROCESS
-                </div>`;
-        }
-        return `<span style="color: #cbd5e1; font-weight: 500; font-size: 14px;">—</span>`;
+        if(value === '✔️') return `<span class="status-badge approved">✔️ Approved</span>`;
+        if(value === 'Under Processed') return `<span class="status-badge pending">Under Processed</span>`;
+        return `<span class="status-badge blank">-</span>`;
     }
 
     function openModal() {
@@ -646,75 +387,46 @@
     }
 
     async function saveManagementForm() {
-    const type = document.getElementById('management-type').value; const f = fleetData[currentFleet];
+        const type = document.getElementById('management-type').value; const f = fleetData[currentFleet];
 
-    if(type === 'aircraft') {
-        if(document.getElementById('aircraft-mode').value === 'add') {
-            const name = document.getElementById('new-aircraft-name').value.trim().toUpperCase(); 
-            if(!name) {
-                showNotification("⚠️ Please enter a valid Aircraft Registration!", "warning");
-                return;
-            }
-            const key = name.replace(/[^A-Z0-9]/g, "").toLowerCase(); 
-            
-            // حماية لمنع تكرار الطائرة
-            if(f.aircrafts.includes(key)) {
-                showNotification(`❌ Aircraft (${name}) already exists!`, "error");
-                return;
-            }
-            
-            f.aircrafts.push(key);
-            f.labels[key] = { title: name, color: "#" + Math.floor(Math.random()*16777215).toString(16) }; f.stations.forEach(r => r[key] = "");
-            showNotification(`✈️ Aircraft ${name} added successfully!`, "success");
-        } else {
-            const target = document.getElementById('remove-aircraft-select').value;
-            const planeTitle = f.labels[target]?.title || target.toUpperCase();
-            f.aircrafts = f.aircrafts.filter(p => p !== target); delete f.labels[target]; f.stations.forEach(r => delete r[target]);
-            showNotification(`🗑️ Aircraft ${planeTitle} removed.`, "warning");
-        }
-    } else {
-        const target = document.getElementById('form-station-select').value;
-
-        if(target === "TCO_MANAGEMENT") {
-            if(!f.tco_tracks) f.tco_tracks = {};
-            f.aircrafts.forEach(plane => {
-                f.tco_tracks[plane] = {
-                    uae: document.getElementById(`form-tco-uae-${plane}`).value,
-                    uk: document.getElementById(`form-tco-uk-${plane}`).value,
-                    eu: document.getElementById(`form-tco-eu-${plane}`).value
-                };
-            });
-            showNotification("📋 TCO Requirements updated successfully!", "success");
-        } 
-        else {
-            const mode = document.getElementById('form-mode').value; const region = document.getElementById('form-region').value;
-            let vals = {}; f.aircrafts.forEach(p => vals[p] = document.getElementById(`form-input-${p}`).value);
-
-            if(target === "ADD_NEW_STATION_MODE") {
-                const sName = document.getElementById('form-station-name').value.trim().toUpperCase();
-                if (!sName) {
-                    showNotification("⚠️ Please enter a valid Station Code!", "warning");
-                    return;
-                }
-                
-                // التنبيه الاحترافي لمنع تكرار المحطة
-                if (f.stations.some(i => i.station === sName)) {
-                    showNotification(`❌ Station (${sName}) already exists in this fleet!`, "error");
-                    return;
-                }
-                let newRow = { region, station: sName }; f.aircrafts.forEach(p => newRow[p] = vals[p]); f.stations.push(newRow);
-                showNotification(`📍 Station ${sName} added successfully!`, "success");
+        if(type === 'aircraft') {
+            if(document.getElementById('aircraft-mode').value === 'add') {
+                const name = document.getElementById('new-aircraft-name').value.trim().toUpperCase(); if(!name) return;
+                const key = name.replace(/[^A-Z0-9]/g, "").toLowerCase(); f.aircrafts.push(key);
+                f.labels[key] = { title: name, color: "#" + Math.floor(Math.random()*16777215).toString(16) }; f.stations.forEach(r => r[key] = "");
             } else {
-                const idx = f.stations.findIndex(i => i.station === target);
-                if(idx !== -1) { 
-                    f.stations[idx].region = region; f.aircrafts.forEach(p => f.stations[idx][p] = vals[p]); 
-                    showNotification(`✏️ Station ${target} updated successfully!`, "success");
+                const target = document.getElementById('remove-aircraft-select').value;
+                f.aircrafts = f.aircrafts.filter(p => p !== target); delete f.labels[target]; f.stations.forEach(r => delete r[target]);
+            }
+        } else {
+            const target = document.getElementById('form-station-select').value;
+
+            if(target === "TCO_MANAGEMENT") {
+                if(!f.tco_tracks) f.tco_tracks = {};
+                f.aircrafts.forEach(plane => {
+                    f.tco_tracks[plane] = {
+                        uae: document.getElementById(`form-tco-uae-${plane}`).value,
+                        uk: document.getElementById(`form-tco-uk-${plane}`).value,
+                        eu: document.getElementById(`form-tco-eu-${plane}`).value
+                    };
+                });
+            } 
+            else {
+                const mode = document.getElementById('form-mode').value; const region = document.getElementById('form-region').value;
+                let vals = {}; f.aircrafts.forEach(p => vals[p] = document.getElementById(`form-input-${p}`).value);
+
+                if(target === "ADD_NEW_STATION_MODE") {
+                    const sName = document.getElementById('form-station-name').value.trim().toUpperCase();
+                    if(!sName || f.stations.some(i => i.station === sName)) return;
+                    let newRow = { region, station: sName }; f.aircrafts.forEach(p => newRow[p] = vals[p]); f.stations.push(newRow);
+                } else {
+                    const idx = f.stations.findIndex(i => i.station === target);
+                    if(idx !== -1) { f.stations[idx].region = region; f.aircrafts.forEach(p => f.stations[idx][p] = vals[p]); }
                 }
             }
         }
+        await saveToCloud(); initializeDashboard(); closeModal();
     }
-    await saveToCloud(); initializeDashboard(); closeModal();
-}
 
     function updateCounts() {
         if(!fleetData[currentFleet] || !fleetData[currentFleet].aircrafts) return;
@@ -831,26 +543,18 @@
     document.getElementById('admin-password-input').addEventListener('keypress', function(e) { if (e.key === 'Enter') { verifyAdminPassword(); } });
 
     fetchFromCloud();
-function showNotification(message, type = "error") {
-    const toast = document.getElementById('custom-toast');
-    toast.innerText = message;
-    toast.style.display = 'flex';
-    
-    // تغيير اللون بناءً على نوع الرسالة
-    if (type === "success") {
-        toast.style.backgroundColor = "var(--success)"; // أخضر
-    } else if (type === "warning") {
-        toast.style.backgroundColor = "var(--warning)"; // أصفر
-    } else {
-        toast.style.backgroundColor = "var(--danger)"; // أحمر للغلط
+
+
+    // دالة لفتح وقفل المنيو عند الضغط
+    function toggleMenu(event) {
+        event.stopPropagation(); // منع غلق المنيو فوراً عند الضغط على الزرار نفسه
+        document.getElementById('dropdown-menu').classList.toggle('active');
     }
-    
-    // تختفي تلقائياً بعد 4 ثواني
-    setTimeout(() => {
-        toast.style.display = 'none';
-    }, 4000);
-}
-</script>
-<div id="custom-toast" style="display: none; position: fixed; bottom: 30px; right: 30px; background: #ef4444; color: white; padding: 16px 24px; border-radius: 10px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); z-index: 10000; font-weight: bold; font-size: 14px; align-items: center; gap: 10px; animation: slideIn 0.3s ease;"></div>
-</body>
-</html>
+
+    // حركة ذكية: لو المنيو مفتوحة والمستخدم ضغط في أي حتة فاضية في الشاشة، المنيو تقفل لوحدها
+    document.addEventListener('click', function() {
+        const menu = document.getElementById('dropdown-menu');
+        if (menu && menu.classList.contains('active')) {
+            menu.classList.remove('active');
+        }
+    });
