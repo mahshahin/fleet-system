@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbwG7q8kD0GotJ3tPmbu6Q9bgzkaihP1DeXVNeYuQoZtHh9q3lDZVFF_70ZTOP5TuSRxSA/exec"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbwG7q8kD0GotJ3tPmbu6Q9bgzkaihP1DeXVNeYuQoZtHh9q3lDZVFF_70ZTOP5TuSRxSA/exec"; 
 
     let isAdmin = false; const ADMIN_PASSWORD = "1234"; let currentFleet = "A359"; let fleetData = {};
 
@@ -51,7 +51,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwG7q8kD0GotJ3tPmbu6Q9b
                 });
 
                 fleetData = cloudData;
-                showSyncStatus("☁️ Cloud DB Connected", "#dcfce7", "#15803d");
+                showSyncStatus("☁️", "#dcfce7", "#15803d");
             } else {
                 fleetData = getDefaultData();
                 await saveToCloud();
@@ -98,9 +98,24 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwG7q8kD0GotJ3tPmbu6Q9b
 
     function closePasswordModal() { document.getElementById('password-modal').style.display = 'none'; }
 
-    function verifyAdminPassword() {
+    // دالة سحرية لتشفيير الباسورد قبل الفحص
+    async function sha256(string) {
+        const utf8 = new Uint8Array(Array.from(string).map(c => c.charCodeAt(0)));
+        const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function verifyAdminPassword() {
         const enteredPass = document.getElementById('admin-password-input').value;
-        if (enteredPass === ADMIN_PASSWORD) {
+        
+        // تشفير الباسورد المدخلة
+        const enteredHash = await sha256(enteredPass);
+        
+        // المقارنة بتتم بين كودين مشفرين (مفيش أي باسورد صريحة في الكود هنا)
+        const SECURE_HASH = "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4"; // 
+
+        if (enteredHash === SECURE_HASH) {
             isAdmin = true;
             document.getElementById('admin-btn').style.display = 'none';
             document.getElementById('lock-btn').style.display = 'inline-block';
@@ -183,9 +198,27 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwG7q8kD0GotJ3tPmbu6Q9b
     }
 
     function getTcoBadgeMarkup(val) {
-        if(val === 'OK') return `<span class="tco-badge ok">✔️ OK</span>`;
-        if(val === 'UNDER PROCESS') return `<span class="tco-badge pending">⏳ UNDER PROCESS</span>`;
-        return `<span class="tco-badge blank">- Remaining -</span>`;
+        if(val === 'OK') {
+            return `
+                <div style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 13px; color: #16a34a; letter-spacing: 0.5px; cursor: default;">
+                    <span style="position: relative; display: flex; height: 8px; width: 8px;">
+                        <span style="position: absolute; height: 100%; width: 100%; border-radius: 50%; background-color: #4ade80; opacity: 0.75; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
+                        <span style="position: relative; display: inline-flex; border-radius: 50%; height: 8px; width: 8px; background-color: #16a34a; box-shadow: 0 0 8px #22c55e;"></span>
+                    </span>
+                    OK
+                </div>`;
+        }
+        if(val === 'UNDER PROCESS') {
+            return `
+                <div style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 13px; color: #d97706; letter-spacing: 0.5px; cursor: default;">
+                    <span style="position: relative; display: flex; height: 8px; width: 8px;">
+                        <span style="position: absolute; height: 100%; width: 100%; border-radius: 50%; background-color: #fbbf24; opacity: 0.75; animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
+                        <span style="position: relative; display: inline-flex; border-radius: 50%; height: 8px; width: 8px; background-color: #d97706; box-shadow: 0 0 8px #f59e0b;"></span>
+                    </span>
+                    UNDER PROCESS
+                </div>`;
+        }
+        return `<span style="color: #cbd5e1; font-weight: 500; font-size: 14px;">—</span>`;
     }
 
     function buildTableHeaders() {
@@ -225,9 +258,27 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwG7q8kD0GotJ3tPmbu6Q9b
     }
 
     function getBadgeMarkup(value) {
-        if(value === '✔️') return `<span class="status-badge approved">✔️ Approved</span>`;
-        if(value === 'Under Processed') return `<span class="status-badge pending">Under Processed</span>`;
-        return `<span class="status-badge blank">-</span>`;
+        if(value === '✔️') {
+            return `
+                <div style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 13px; color: #16a34a; letter-spacing: 0.5px; cursor: default;">
+                    <span style="position: relative; display: flex; h: 8px; w: 8px; height: 8px; width: 8px;">
+                        <span style="position: absolute; inline-size: 100%; height: 100%; width: 100%; border-radius: 50%; background-color: #4ade80; opacity: 0.75; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
+                        <span style="position: relative; display: inline-flex; border-radius: 50%; height: 8px; width: 8px; background-color: #16a34a; box-shadow: 0 0 8px #22c55e;"></span>
+                    </span>
+                    APPROVED
+                </div>`;
+        }
+        if(value === 'Under Processed') {
+            return `
+                <div style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 13px; color: #d97706; letter-spacing: 0.5px; cursor: default;">
+                    <span style="position: relative; display: flex; height: 8px; width: 8px;">
+                        <span style="position: absolute; height: 100%; width: 100%; border-radius: 50%; background-color: #fbbf24; opacity: 0.75; animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
+                        <span style="position: relative; display: inline-flex; border-radius: 50%; height: 8px; width: 8px; background-color: #d97706; box-shadow: 0 0 8px #f59e0b;"></span>
+                    </span>
+                    UNDER PROCESS
+                </div>`;
+        }
+        return `<span style="color: #cbd5e1; font-weight: 500; font-size: 14px;">—</span>`;
     }
 
     function openModal() {
@@ -387,46 +438,75 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwG7q8kD0GotJ3tPmbu6Q9b
     }
 
     async function saveManagementForm() {
-        const type = document.getElementById('management-type').value; const f = fleetData[currentFleet];
+    const type = document.getElementById('management-type').value; const f = fleetData[currentFleet];
 
-        if(type === 'aircraft') {
-            if(document.getElementById('aircraft-mode').value === 'add') {
-                const name = document.getElementById('new-aircraft-name').value.trim().toUpperCase(); if(!name) return;
-                const key = name.replace(/[^A-Z0-9]/g, "").toLowerCase(); f.aircrafts.push(key);
-                f.labels[key] = { title: name, color: "#" + Math.floor(Math.random()*16777215).toString(16) }; f.stations.forEach(r => r[key] = "");
-            } else {
-                const target = document.getElementById('remove-aircraft-select').value;
-                f.aircrafts = f.aircrafts.filter(p => p !== target); delete f.labels[target]; f.stations.forEach(r => delete r[target]);
+    if(type === 'aircraft') {
+        if(document.getElementById('aircraft-mode').value === 'add') {
+            const name = document.getElementById('new-aircraft-name').value.trim().toUpperCase(); 
+            if(!name) {
+                showNotification("⚠️ Please enter a valid Aircraft Registration!", "warning");
+                return;
             }
+            const key = name.replace(/[^A-Z0-9]/g, "").toLowerCase(); 
+            
+            // حماية لمنع تكرار الطائرة
+            if(f.aircrafts.includes(key)) {
+                showNotification(`❌ Aircraft (${name}) already exists!`, "error");
+                return;
+            }
+            
+            f.aircrafts.push(key);
+            f.labels[key] = { title: name, color: "#" + Math.floor(Math.random()*16777215).toString(16) }; f.stations.forEach(r => r[key] = "");
+            showNotification(`✈️ Aircraft ${name} added successfully!`, "success");
         } else {
-            const target = document.getElementById('form-station-select').value;
+            const target = document.getElementById('remove-aircraft-select').value;
+            const planeTitle = f.labels[target]?.title || target.toUpperCase();
+            f.aircrafts = f.aircrafts.filter(p => p !== target); delete f.labels[target]; f.stations.forEach(r => delete r[target]);
+            showNotification(`🗑️ Aircraft ${planeTitle} removed.`, "warning");
+        }
+    } else {
+        const target = document.getElementById('form-station-select').value;
 
-            if(target === "TCO_MANAGEMENT") {
-                if(!f.tco_tracks) f.tco_tracks = {};
-                f.aircrafts.forEach(plane => {
-                    f.tco_tracks[plane] = {
-                        uae: document.getElementById(`form-tco-uae-${plane}`).value,
-                        uk: document.getElementById(`form-tco-uk-${plane}`).value,
-                        eu: document.getElementById(`form-tco-eu-${plane}`).value
-                    };
-                });
-            } 
-            else {
-                const mode = document.getElementById('form-mode').value; const region = document.getElementById('form-region').value;
-                let vals = {}; f.aircrafts.forEach(p => vals[p] = document.getElementById(`form-input-${p}`).value);
+        if(target === "TCO_MANAGEMENT") {
+            if(!f.tco_tracks) f.tco_tracks = {};
+            f.aircrafts.forEach(plane => {
+                f.tco_tracks[plane] = {
+                    uae: document.getElementById(`form-tco-uae-${plane}`).value,
+                    uk: document.getElementById(`form-tco-uk-${plane}`).value,
+                    eu: document.getElementById(`form-tco-eu-${plane}`).value
+                };
+            });
+            showNotification("📋 TCO Requirements updated successfully!", "success");
+        } 
+        else {
+            const mode = document.getElementById('form-mode').value; const region = document.getElementById('form-region').value;
+            let vals = {}; f.aircrafts.forEach(p => vals[p] = document.getElementById(`form-input-${p}`).value);
 
-                if(target === "ADD_NEW_STATION_MODE") {
-                    const sName = document.getElementById('form-station-name').value.trim().toUpperCase();
-                    if(!sName || f.stations.some(i => i.station === sName)) return;
-                    let newRow = { region, station: sName }; f.aircrafts.forEach(p => newRow[p] = vals[p]); f.stations.push(newRow);
-                } else {
-                    const idx = f.stations.findIndex(i => i.station === target);
-                    if(idx !== -1) { f.stations[idx].region = region; f.aircrafts.forEach(p => f.stations[idx][p] = vals[p]); }
+            if(target === "ADD_NEW_STATION_MODE") {
+                const sName = document.getElementById('form-station-name').value.trim().toUpperCase();
+                if (!sName) {
+                    showNotification("⚠️ Please enter a valid Station Code!", "warning");
+                    return;
+                }
+                
+                // التنبيه الاحترافي لمنع تكرار المحطة
+                if (f.stations.some(i => i.station === sName)) {
+                    showNotification(`❌ Station (${sName}) already exists in this fleet!`, "error");
+                    return;
+                }
+                let newRow = { region, station: sName }; f.aircrafts.forEach(p => newRow[p] = vals[p]); f.stations.push(newRow);
+                showNotification(`📍 Station ${sName} added successfully!`, "success");
+            } else {
+                const idx = f.stations.findIndex(i => i.station === target);
+                if(idx !== -1) { 
+                    f.stations[idx].region = region; f.aircrafts.forEach(p => f.stations[idx][p] = vals[p]); 
+                    showNotification(`✏️ Station ${target} updated successfully!`, "success");
                 }
             }
         }
-        await saveToCloud(); initializeDashboard(); closeModal();
     }
+    await saveToCloud(); initializeDashboard(); closeModal();
+}
 
     function updateCounts() {
         if(!fleetData[currentFleet] || !fleetData[currentFleet].aircrafts) return;
@@ -543,18 +623,22 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwG7q8kD0GotJ3tPmbu6Q9b
     document.getElementById('admin-password-input').addEventListener('keypress', function(e) { if (e.key === 'Enter') { verifyAdminPassword(); } });
 
     fetchFromCloud();
-
-
-    // دالة لفتح وقفل المنيو عند الضغط
-    function toggleMenu(event) {
-        event.stopPropagation(); // منع غلق المنيو فوراً عند الضغط على الزرار نفسه
-        document.getElementById('dropdown-menu').classList.toggle('active');
+function showNotification(message, type = "error") {
+    const toast = document.getElementById('custom-toast');
+    toast.innerText = message;
+    toast.style.display = 'flex';
+    
+    // تغيير اللون بناءً على نوع الرسالة
+    if (type === "success") {
+        toast.style.backgroundColor = "var(--success)"; // أخضر
+    } else if (type === "warning") {
+        toast.style.backgroundColor = "var(--warning)"; // أصفر
+    } else {
+        toast.style.backgroundColor = "var(--danger)"; // أحمر للغلط
     }
-
-    // حركة ذكية: لو المنيو مفتوحة والمستخدم ضغط في أي حتة فاضية في الشاشة، المنيو تقفل لوحدها
-    document.addEventListener('click', function() {
-        const menu = document.getElementById('dropdown-menu');
-        if (menu && menu.classList.contains('active')) {
-            menu.classList.remove('active');
-        }
-    });
+    
+    // تختفي تلقائياً بعد 4 ثواني
+    setTimeout(() => {
+        toast.style.display = 'none';
+    }, 4000);
+}
