@@ -7,7 +7,8 @@
         try {
             let response = await fetch(API_URL);
             let cloudData = await response.json();
-            
+            // 🎯 السطر السحري عشان نقفش الداتا في الـ Console فوراً
+            console.log("My Raw Fleet Data:", cloudData);
             if (cloudData && (cloudData.A359 || cloudData.B738M)) {
                 // 💡 كود الفلترة والإصلاح الجذري: لو لقى حروف "bma" القديمة المرفوعة على السيرفر هيصلحها لحروفك الحقيقية فوراً
                 if (cloudData.B738M && cloudData.B738M.aircrafts && cloudData.B738M.aircrafts.includes("bma")) {
@@ -208,14 +209,14 @@
                     OK
                 </div>`;
         }
-        if(val === 'UNDER PROCESS') {
+        if(val === 'Under Processed') {
             return `
                 <div style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 13px; color: #d97706; letter-spacing: 0.5px; cursor: default;">
                     <span style="position: relative; display: flex; height: 8px; width: 8px;">
                         <span style="position: absolute; height: 100%; width: 100%; border-radius: 50%; background-color: #fbbf24; opacity: 0.75; animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
                         <span style="position: relative; display: inline-flex; border-radius: 50%; height: 8px; width: 8px; background-color: #d97706; box-shadow: 0 0 8px #f59e0b;"></span>
                     </span>
-                    UNDER PROCESS
+                    Under Processed   
                 </div>`;
         }
         return `<span style="color: #cbd5e1; font-weight: 500; font-size: 14px;">—</span>`;
@@ -275,7 +276,7 @@
                         <span style="position: absolute; height: 100%; width: 100%; border-radius: 50%; background-color: #fbbf24; opacity: 0.75; animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
                         <span style="position: relative; display: inline-flex; border-radius: 50%; height: 8px; width: 8px; background-color: #d97706; box-shadow: 0 0 8px #f59e0b;"></span>
                     </span>
-                    UNDER PROCESS
+                    Under Processed
                 </div>`;
         }
         return `<span style="color: #cbd5e1; font-weight: 500; font-size: 14px;">—</span>`;
@@ -367,15 +368,15 @@
                         <span style="font-weight: bold; color: var(--primary);">${planeTitle}</span>
                         <div class="form-group" style="margin-top:5px;">
                             <label>UAE TCO:</label>
-                            <select id="form-tco-uae-${plane}"><option value="">- Blank -</option><option value="OK">OK</option><option value="UNDER PROCESS">UNDER PROCESS</option></select>
+                            <select id="form-tco-uae-${plane}"><option value="">- Blank -</option><option value="OK">OK</option><option value="Under Processed">UNDER PROCESS</option></select>
                         </div>
                         <div class="form-group">
                             <label>UK TCO:</label>
-                            <select id="form-tco-uk-${plane}"><option value="">- Blank -</option><option value="OK">OK</option><option value="UNDER PROCESS">UNDER PROCESS</option></select>
+                            <select id="form-tco-uk-${plane}"><option value="">- Blank -</option><option value="OK">OK</option><option value="Under Processed">UNDER PROCESS</option></select>
                         </div>
                         <div class="form-group">
                             <label>EU TCO:</label>
-                            <select id="form-tco-eu-${plane}"><option value="">- Blank -</option><option value="OK">OK</option><option value="UNDER PROCESS">UNDER PROCESS</option></select>
+                            <select id="form-tco-eu-${plane}"><option value="">- Blank -</option><option value="OK">OK</option><option value="Under Processed">UNDER PROCESS</option></select>
                         </div>
                     </div>
                 `;
@@ -517,59 +518,62 @@
     }
 
     function filterTable() {
-        const f = fleetData[currentFleet]; 
-        const s = document.getElementById('station-search-filter').value.trim().toUpperCase();
-        const rVal = document.getElementById('region-filter').value; 
-        const aVal = document.getElementById('aircraft-filter').value; 
-        const stVal = document.getElementById('status-filter').value;
-        
-        // 1. التحكم في إظهار وإخفاء أعمدة الطائرات والكروت بناءً على فلتر الطائرة
-        f.aircrafts.forEach(p => {
-            let disp = (aVal === 'all' || aVal === p) ? '' : 'none';
-            if(document.querySelector(`.col-${p}`)) document.querySelector(`.col-${p}`).style.display = disp;
-            document.querySelectorAll(`.cell-${p}`).forEach(c => c.style.display = disp);
-            if(document.querySelector(`.card-${p}`)) document.querySelector(`.card-${p}`).style.display = disp;
-        });
+    const f = fleetData[currentFleet]; 
+    const s = document.getElementById('station-search-filter').value.trim().toUpperCase();
+    const rVal = document.getElementById('region-filter').value; 
+    const aVal = document.getElementById('aircraft-filter').value; 
+    const stVal = document.getElementById('status-filter').value.trim().toLowerCase(); // قراءة الفلتر بحروف صغيرة
+    
+    // 1. التحكم في إظهار وإخفاء الأعمدة والكروت بناءً على فلتر الطائرة المختارة
+    f.aircrafts.forEach(p => {
+        let disp = (aVal === 'all' || aVal === p) ? '' : 'none';
+        if(document.querySelector(`.col-${p}`)) document.querySelector(`.col-${p}`).style.display = disp;
+        document.querySelectorAll(`.cell-${p}`).forEach(c => c.style.display = disp);
+        if(document.querySelector(`.card-${p}`)) document.querySelector(`.card-${p}`).style.display = disp;
+    });
 
-        // 2. الفلترة الصحيحة لكل سطر بناءً على الداتا الفعلية المكتوبة جوه الـ HTML
-        document.querySelectorAll('#table-body tr').forEach((row) => {
-            // جلب الإقليم الجغرافي من الخاصية اللي على السطر
-            const rowRegion = row.getAttribute('data-region');
-            // جلب اسم المحطة من الكود المتواجد جوه السطر نفسه
-            const rowStation = row.querySelector('code').innerText.trim().toUpperCase();
-            
-            // فحص مطابقة البحث والمنطقة
-            const matchS = s === '' || rowStation.includes(s); 
-            const matchR = rVal === 'all' || rowRegion === rVal;
-            
-            // فحص مطابقة الحالة بناءً على الطائرة المختارة
-            let matchSt = false;
-            if (stVal === 'all') {
-                matchSt = true;
+    // 2. الفلترة الذكية بقراءة النص الصافي المعروض جوه الـ Div الجديد
+    document.querySelectorAll('#table-body tr').forEach((row) => {
+        const rowRegion = row.getAttribute('data-region');
+        const rowStation = row.querySelector('code').innerText.trim().toUpperCase();
+        
+        const matchS = s === '' || rowStation.includes(s); 
+        const matchR = rVal === 'all' || rowRegion === rVal;
+        
+        let matchSt = false;
+        if (stVal === 'all') {
+            matchSt = true;
+        } else {
+            if (aVal !== 'all') {
+                // لو مختارين طائرة محددة، بنقرا نص الخلية ونحوله لسمول تماماً
+                const cell = row.querySelector(`.cell-${aVal}`);
+                const cellText = cell ? cell.innerText.trim().toLowerCase() : "";
+                
+                if (stVal === "approved") {
+                    matchSt = cellText.includes("approved") || cellText.includes("approve");
+                } else if (stVal === "under process") {
+                    matchSt = cellText.includes("under") || cellText.includes("processed");
+                } else if (stVal === "") {
+                    matchSt = cellText === "—" || cellText === "-" || cellText === "";
+                }
             } else {
-                if (aVal !== 'all') {
-                    // لو مختارين طيارة محددة، نشوف حالتها في السطر ده بالذات
-                    const cell = row.querySelector(`.cell-${aVal}`);
-                    const badge = cell ? cell.querySelector('.status-badge') : null;
-                    const statusText = badge ? (badge.classList.contains('approved') ? '✔️' : 'Under Processed') : '';
-                    matchSt = statusText === stVal;
-                } else {
-                    // لو مش مختارين طيارة، نشوف لو أي طيارة في السطر واخدة الحالة دي
-                    matchSt = Array.from(row.querySelectorAll('.status-badge')).some(badge => {
-                        const statusText = badge.classList.contains('approved') ? '✔️' : 'Under Processed';
-                        return statusText === stVal;
-                    });
-                    // لو بندور على الـ Blank (الخالي)
-                    if (stVal === '' && row.querySelectorAll('.status-badge.blank').length > 0) {
-                        matchSt = true;
-                    }
+                // لو بندور في كل خلايا السطر (All Aircrafts)
+                const cells = Array.from(row.querySelectorAll('td')).slice(2);
+                const cellsText = cells.map(td => td.innerText.trim().toLowerCase());
+                
+                if (stVal === "approved") {
+                    matchSt = cellsText.some(t => t.includes("approved") || t.includes("approve"));
+                } else if (stVal === "under process") {
+                    matchSt = cellsText.some(t => t.includes("under") || t.includes("processed"));
+                } else if (stVal === "") {
+                    matchSt = cellsText.some(t => t === "—" || t === "-" || t === "");
                 }
             }
-            
-            // تطبيق الإخفاء أو الإظهار بشكل صحيح وجذري
-            row.style.display = (matchS && matchR && matchSt) ? '' : 'none';
-        });
-    }
+        }
+        
+        row.style.display = (matchS && matchR && matchSt) ? '' : 'none';
+    });
+}
 
     function getDefaultData() {
         return {
