@@ -467,6 +467,6 @@
 
 /* ⚠️ إلغاء إخفاء زرار الطباعة في الموبايل طالما بقى جوه منيو مستورة */
 @media (max-width: 768px) {
-    .btn-print { display: inline-flex !important; }
+    .btn-print { display: none !important; }
 }
    
