@@ -352,15 +352,15 @@
                 overflow: visible !important;
             }
             .menu-toggle-btn {
-        display: none !important;
-        opacity: 0 !important;
-        visibility: hidden !important;
-        width: 0 !important;
-        height: 0 !important;
-        padding: 0 !important;
-        margin: 0 !important;
-    }
-            .controls, .btn, header p, .modal-overlay, .fleet-tabs, #sync-status, .tco-section h2 { 
+                                display: none !important;
+                                opacity: 0 !important;
+                                visibility: hidden !important;
+                                width: 0 !important;
+                                height: 0 !important;
+                                padding: 0 !important;
+                                margin: 0 !important;
+                            }
+            .controls, .btn, .modal-overlay, .fleet-tabs, #sync-status, .tco-section h2 { 
                 display: none !important; 
             }
             header { 
