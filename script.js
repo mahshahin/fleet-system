@@ -1,5 +1,5 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbwG7q8kD0GotJ3tPmbu6Q9bgzkaihP1DeXVNeYuQoZtHh9q3lDZVFF_70ZTOP5TuSRxSA/exec"; 
-
+    
     let isAdmin = false; const ADMIN_PASSWORD = "1234"; let currentFleet = "A359"; let fleetData = {};
 
     async function fetchFromCloud() {
@@ -627,7 +627,7 @@
     document.getElementById('admin-password-input').addEventListener('keypress', function(e) { if (e.key === 'Enter') { verifyAdminPassword(); } });
 
     fetchFromCloud();
-function showNotification(message, type = "error") {
+    function showNotification(message, type = "error") {
     const toast = document.getElementById('custom-toast');
     toast.innerText = message;
     toast.style.display = 'flex';
@@ -646,3 +646,16 @@ function showNotification(message, type = "error") {
         toast.style.display = 'none';
     }, 4000);
 }
+
+fetch(`${sheetURL}?_=${new Date().getTime()}`, {
+    method: 'GET',
+    cache: 'no-store', // ❌ تمنع المتصفح من تخزين الداتا كاش نهائياً
+    headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+    }
+})
+.then(response => response.json())
+.then(data => {
+    // كود تشغيل الجدول
+});
