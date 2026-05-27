@@ -19,7 +19,10 @@
     <div id="sync-status">🔄 Connecting to Cloud DB...</div>
     
     <div class="menu-container">
-        <button class="menu-toggle-btn" onclick="event.stopPropagation(); document.getElementById('dropdown-menu').classList.toggle('active');">☰ Menu</button>
+        <button class="menu-toggle-btn" onclick="event.stopPropagation(); document.getElementById('dropdown-menu').classList.toggle('active');">
+            <span class="menu-icon">☰</span>
+            <span class="menu-text">Menu</span>
+        </button>
         
         <div class="dropdown-menu" id="dropdown-menu">
             <button class="btn btn-manage" id="manage-btn" onclick="document.getElementById('dropdown-menu').classList.remove('active'); openModal()">⚙️ Control Panel</button>
