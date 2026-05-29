@@ -361,7 +361,7 @@
                                 padding: 0 !important;
                                 margin: 0 !important;
                             }
-            .controls, .btn, .modal-overlay, .fleet-tabs, #sync-status, .tco-section h2 { 
+            .controls, .btn, .modal-overlay, .fleet-tabs, #sync-status { 
                 display: none !important; 
             }
             header { 

@@ -1,214 +1,152 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EGYPTAIR Fleet Dashboard (Hybrid Cloud/Offline)</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>EGYPTAIR-NEW FLEET</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+    /* يمكنك إزالة كلاس .bg-login بالكامل لأنه لم يعد مستخدماً */
+</style>
 </head>
+<body class="min-h-screen bg-gray-100 relative flex items-center justify-center p-4 sm:p-6 font-sans selection:bg-purple-500 selection:text-white overflow-hidden">
 
-<body>
-
-<div class="container">
-    <header>
-        <div>
-            <h1>✈ EGYPTAIR - Fleet Station Approval Dashboard</h1>
-            <p id="fleet-subtitle" style="margin: 5px 0 0 0; opacity: 0.8;">Active Fleet: Airbus A350-900 Dashboard</p>
-        </div>
-        <div class="header-actions">
-    <div id="sync-status">🔄 Connecting to Cloud DB...</div>
-    
-    <div class="menu-container">
-        <button class="menu-toggle-btn" onclick="event.stopPropagation(); document.getElementById('dropdown-menu').classList.toggle('active');">
-            <span class="menu-icon">☰</span>
-            <span class="menu-text">Menu</span>
-        </button>
+    <div class="relative z-10 w-full max-w-md sm:max-w-[400px] p-6 sm:p-10 rounded-2xl sm:rounded-3xl bg-white border border-gray-200 shadow-xl text-gray-800 text-center transition-all duration-300 mx-auto">
         
-        <div class="dropdown-menu" id="dropdown-menu">
-            <button class="btn btn-manage" id="manage-btn" onclick="document.getElementById('dropdown-menu').classList.remove('active'); openModal()">⚙️ Control Panel</button>
+        <div class="mb-6 sm:mb-8 text-center">
+            <h2 class="text-lg sm:text-xl font-black tracking-widest text-gray-900 uppercase mb-1">
+                EGYPTAIR NEW A/C FLEET
+            </h2>
+            <p class="text-xs sm:text-sm text-gray-500 font-bold tracking-widest uppercase">
+                Secure Login
+            </p>
+        </div>
+
+        <form id="loginForm" class="flex flex-col gap-5 sm:gap-6 text-left" dir="ltr">
+            <div class="relative">
+                <input type="text" id="username" placeholder="Username" required class="w-full bg-gray-50 border border-gray-300 rounded-full px-5 sm:px-6 py-3 sm:py-3.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all pr-12 text-base sm:text-sm" />
+                <div class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                    </svg>
+                </div>
+            </div>
+
+            <div class="relative">
+                <input type="password" id="password" placeholder="Password" required class="w-full bg-gray-50 border border-gray-300 rounded-full px-5 sm:px-6 py-3 sm:py-3.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all pr-12 text-base sm:text-sm" />
+                <div class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                    </svg>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 px-2 -mt-1 sm:-mt-2 justify-start">
+                <input type="checkbox" id="showPassword" class="w-4 h-4 accent-purple-600 cursor-pointer rounded border-gray-300" />
+                <label for="showPassword" class="text-xs sm:text-sm text-gray-600 cursor-pointer select-none">Show Password</label>
+            </div>
+
+            <div class="flex items-center gap-2 px-2 justify-start mb-2">
+                <input type="checkbox" id="remember" class="w-4 h-4 accent-purple-600 cursor-pointer rounded border-gray-300" />
+                <label for="remember" class="text-xs sm:text-sm text-gray-600 cursor-pointer select-none">Remember me</label>
+            </div>
+
+            <button type="submit" class="w-full bg-slate-900 text-white font-bold rounded-full py-3 sm:py-3.5 mt-2 hover:bg-slate-800 active:scale-[0.98] transition-all shadow-lg cursor-pointer text-sm sm:text-base">
+                Login
+            </button>
+        </form>
+    </div>
+
+    <div id="error-toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 bg-red-600/90 backdrop-blur-md text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 transition-all duration-500 opacity-0 -translate-y-10 pointer-events-none w-11/12 max-w-md text-sm sm:text-base font-bold" dir="rtl">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <span id="error-message">بيانات الدخول غير صحيحة، راجع الكود والباسورد!</span>
+    </div>
+
+    <script>
+        // دالة سحرية لإظهار رسالة الخطأ الشيك
+function showErrorToast(message) {
+    const toast = document.getElementById('error-toast');
+    const msgElement = document.getElementById('error-message');
     
-            <button class="btn btn-admin" id="admin-btn" onclick="document.getElementById('dropdown-menu').classList.remove('active'); openPasswordModal()">🔒 Admin Login</button>
+    // تغيير النص لو حابب
+    if(message) msgElement.innerText = message;
+
+    // إظهار الإشعار (تغيير الكلاسات لعمل أنيميشن النزول)
+    toast.classList.remove('opacity-0', '-translate-y-10');
+    toast.classList.add('opacity-100', 'translate-y-0');
+
+    // إخفاء الإشعار أوتوماتيك بعد 3 ثواني
+    setTimeout(() => {
+        toast.classList.remove('opacity-100', 'translate-y-0');
+        toast.classList.add('opacity-0', '-translate-y-10');
+    }, 3000);
+}
+
+// 👁️ ذكاء إظهار وإخفاء الباسورد
+document.getElementById('showPassword').addEventListener('change', function() {
+    const passInput = document.getElementById('password');
+    // لو متعلم عليها، حول الحقل لنص مقروء، ولو لأ رجعه باسورد مخفي
+    passInput.type = this.checked ? 'text' : 'password';
+});
+
+// 🧠 سيستم "تذكرني": استرجاع البيانات عند فتح الصفحة
+window.addEventListener('DOMContentLoaded', (event) => {
+    if (localStorage.getItem('fleetUsername')) {
+        document.getElementById('username').value = localStorage.getItem('fleetUsername');
+        document.getElementById('password').value = localStorage.getItem('fleetPassword');
+        document.getElementById('remember').checked = true;
+    }
+});
+
+
+// كود إرسال البيانات (زي ما هو بس غيرنا طريقة عرض الخطأ)
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+    e.preventDefault(); 
     
-            <button class="btn btn-lock" id="lock-btn" onclick="document.getElementById('dropdown-menu').classList.remove('active'); lockDashboard()">🔓 Lock Changes</button>
-    
-            <button class="btn btn-print" onclick="document.getElementById('dropdown-menu').classList.remove('active'); triggerPrintGuide()">🖨️ Print Fleet Report</button>
-        </div>
-    </div>
-</div>
-    </header>
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerText;
+    submitBtn.innerText = 'Authenticating... ✈️';
+    submitBtn.disabled = true;
 
-    <div class="fleet-tabs">
-        <button class="tab-btn active" id="tab-A359" onclick="switchFleet('A359')">Airbus A350-900</button>
-        <button class="tab-btn" id="tab-B738M" onclick="switchFleet('B738M')">Boeing 737-8 MAX</button>
-    </div>
+    const usernameVal = document.getElementById('username').value;
+    const passwordVal = document.getElementById('password').value;
 
-    <div class="stats-grid" id="stats-container"></div>
+    // تأكد إن الرابط السري بتاعك محطوط هنا صح
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyUTEVCT6z11BBEPzAxi_y9cQ6va87KJJZs5C1NlJi_F8w4Pe_P9l6lyy7XAR6Wd0Kp/exec';
 
-    <div class="tco-section">
-        <h2>📋 Third Country Operator (TCO) Requirements</h2>
-        <div class="tco-table-wrapper">
-            <table class="tco-table">
-                <thead>
-                    <tr>
-                        <th>✈️ Aircraft Registration</th>
-                        <th>🇦🇪 UAE TCO Status</th>
-                        <th>🇬🇧 UK TCO Status</th>
-                        <th>🇪🇺 EU TCO Status</th>
-                    </tr>
-                </thead>
-                <tbody id="tco-table-body">
-                    <!-- الداتا هتتبني ديناميكياً بناء على الطائرات -->
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div class="controls">
-        <div class="filter-group">
-            <label>Search Station:</label>
-            <input type="text" id="station-search-filter" onkeyup="filterTable()" placeholder="e.g. DXB, LHR...">
-        </div>
-        <div class="filter-group">
-            <label>Region:</label>
-            <select id="region-filter" onchange="filterTable()">
-                <option value="all">All Regions</option>
-                <option value="Europe">Europe</option>
-                <option value="America">America</option>
-                <option value="Far East">Far East</option>
-                <option value="Africa">Africa</option>
-                <option value="Middle East">Middle East</option>
-            </select>
-        </div>
-        <div class="filter-group">
-            <label>Aircraft Registration:</label>
-            <select id="aircraft-filter" onchange="filterTable()"><option value="all">All Aircrafts</option></select>
-        </div>
-        <div class="filter-group">
-            <label>Status:</label>
-            <select id="status-filter" onchange="filterTable()">
-                <option value="all">🌐 All Statuses</option>
-                <option value="APPROVED">APPROVED (✔️)</option>
-                <option value="UNDER PROCESS">⏳ Under Process</option>
-                <option value="">📃Blank (Remaining)</option>
-            </select>
-        </div>
-    </div>
-
-    <div class="table-container">
-        <table id="stations-table">
-            <thead><tr id="table-header-row"><th>Geographic Region</th><th>Station</th></tr></thead>
-            <tbody id="table-body"></tbody>
-        </table>
-    </div>
-</div>
-
-<div class="modal-overlay" id="password-modal">
-    <div class="modal-content" style="width: 100%; max-width: 350px;">
-        <h2>🔒 Security Verification</h2>
-        <div class="form-group" style="margin-top: 15px;">
-            <label>Enter Admin Password:</label>
-            <input type="password" id="admin-password-input" placeholder="••••" style="text-align: center; font-size: 18px; letter-spacing: 4px;">
-            <p id="password-error-msg" style="color: var(--danger); font-size: 12px; margin: 5px 0 0 0; display: none; font-weight: bold;">❌ Wrong password! Access denied.</p>
-        </div>
-        <div class="modal-actions" style="margin-top: 25px; justify-content: flex-end; gap: 10px;">
-            <button class="btn" style="background:#64748b;" onclick="closePasswordModal()">Cancel</button>
-            <button class="btn" style="background:var(--success);" onclick="verifyAdminPassword()">Unlock</button>
-        </div>
-    </div>
-</div>
-
-<div class="modal-overlay" id="form-modal">
-    <div class="modal-content">
-        <h2 id="modal-title">⚙️ Management & Fleet Control</h2>
-        <div class="form-group">
-            <label>What do you want to do?</label>
-            <select id="management-type" onchange="handleManagementTypeChange()">
-                <option value="station">Manage Stations / TCO Approvals</option>
-                <option value="aircraft">Manage Fleet (Add / Remove Aircraft)</option>
-                <option value="backup">💾 System Data Backup (Manual Export / Import)</option>
-            </select>
-        </div>
-
-        <div id="aircraft-section" style="display: none; border-top: 2px solid #f1f5f9; padding-top: 15px;">
-            <div class="form-group">
-                <label>Action Mode:</label>
-                <select id="aircraft-mode" onchange="handleAircraftModeChange()">
-                    <option value="add">Add New Aircraft Registration</option>
-                    <option value="remove">Remove Existing Aircraft</option>
-                </select>
-            </div>
-            <div class="form-group" id="aircraft-input-group">
-                <label id="aircraft-input-label">New Aircraft Reg Code:</label>
-                <input type="text" id="new-aircraft-name" placeholder="Enter Registration Code">
-            </div>
-            <div class="form-group" id="aircraft-remove-group" style="display: none;">
-                <label>Select Aircraft to Remove:</label>
-                <select id="remove-aircraft-select"></select>
-            </div>
-        </div>
-
-        <div id="station-section" style="border-top: 2px solid #f1f5f9; padding-top: 15px;">
-            <div class="form-group">
-                <label>Select Target Item to Edit:</label>
-                <select id="form-station-select" onchange="loadStationOrTcoData()"></select>
-            </div>
-
-            <div id="tco-edit-sub-section" style="display:none; background: #faf5ff; padding: 12px; border-radius: 8px; border: 1px dashed #d8b4fe; max-height: 250px; overflow-y:auto;">
-                 <!-- حقول تعديل التيكو لكل طائرة هتتبني هنا ديناميكياً -->
-            </div>
-
-            <div id="station-fields-wrapper">
-                <div class="form-group" id="station-mode-container">
-                    <label>Action Mode:</label>
-                    <select id="form-mode" onchange="handleModeChange()">
-                        <option value="add">New Station (Add)</option>
-                        <option value="edit">Existing Station (Edit / Delete)</option>
-                    </select>
-                </div>
-                <div class="form-group" id="station-input-group">
-                    <label>Station Code (e.g. DXB):</label>
-                    <input type="text" id="form-station-name" placeholder="Enter Station Code">
-                </div>
-                <div class="form-group">
-                    <label>Geographic Region:</label>
-                    <select id="form-region">
-                        <option value="Middle East">Middle East</option>
-                        <option value="Europe">Europe</option>
-                        <option value="America">America</option>
-                        <option value="Far East">Far East</option>
-                        <option value="Africa">Africa</option>
-                    </select>
-                </div>
-                <div class="dynamic-statuses">
-                    <label style="font-weight: bold; font-size:13px; color:var(--accent);">Set Aircraft Approvals:</label>
-                    <div id="dynamic-status-inputs" style="margin-top: 8px;"></div>
-                </div>
-            </div>
-        </div>
-
-        <div id="backup-section" style="display: none; border-top: 2px solid #f1f5f9; padding-top: 15px;">
-            <p style="font-size: 13px; color:#475569; margin: 0 0 10px 0;">Offline Backup Tools:</p>
-            <div class="form-group" style="background:#f0fdf4; padding:12px; border-radius:8px; border:1px solid #bbf7d0;">
-                <label style="color:#16a34a;">📥 Export System Data</label>
-                <button class="btn" style="background:#16a34a; margin-top:5px; width:100%;" onclick="exportSystemData()">Download Backup File (.json)</button>
-            </div>
-            <div class="form-group" style="background:#eff6ff; padding:12px; border-radius:8px; border:1px solid #bfdbfe; margin-top:10px;">
-                <label style="color:#1d4ed8;">📤 Step 2: Import System Data</label>
-                <input type="file" id="import-file-input" accept=".json" style="margin-top:5px; font-size:12px;">
-                <button class="btn" style="background:#1d4ed8; margin-top:8px; width:100%;" onclick="importSystemData()">Upload & Restore Backup</button>
-            </div>
-        </div>
-
-        <div class="modal-actions" id="modal-footer-actions">
-            <div><button class="btn" id="btn-delete-station" style="background:var(--danger); display:none;" onclick="deleteStation()">🗑️ Delete Station</button></div>
-            <div style="display:flex; gap:10px;">
-                <button class="btn" style="background:#64748b;" onclick="closeModal()">Cancel</button>
-                <button class="btn" style="background:var(--success);" id="btn-save-form" onclick="saveManagementForm()">Save Changes</button>
-            </div>
-        </div>
-    </div>
-</div>
-<div id="custom-toast" style="display: none; position: fixed; bottom: 30px; right: 30px; background: #ef4444; color: white; padding: 16px 24px; border-radius: 10px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); z-index: 10000; font-weight: bold; font-size: 14px; align-items: center; gap: 10px; animation: slideIn 0.3s ease;"></div>
-<script src="script.js"></script>
+    fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({ username: usernameVal, password: passwordVal })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // 💾 هنا تكة الـ QA: لو معلم على تذكرني، احفظ البيانات في المتصفح
+        if (document.getElementById('remember').checked) {
+            localStorage.setItem('fleetUsername', usernameVal);
+            localStorage.setItem('fleetPassword', passwordVal);
+        } else {
+            // لو مش معلم، امسح البيانات من المتصفح عشان الأمان
+            localStorage.removeItem('fleetUsername');
+            localStorage.removeItem('fleetPassword');
+        }
+            window.location.href = 'dashboard.html'; 
+        } else {
+            // هنا استخدمنا الإشعار الشيك بدل الـ alert
+            showErrorToast('بيانات الدخول غير صحيحة، يرجى المحاولة مرة أخرى.');
+            submitBtn.innerText = originalText;
+            submitBtn.disabled = false;
+        }
+    })
+    .catch(error => {
+        // وهنا كمان في حالة خطأ في النت
+        showErrorToast('حدث خطأ في الاتصال، تأكد من الإنترنت الخاص بك.');
+        submitBtn.innerText = originalText;
+        submitBtn.disabled = false;
+    });
+});
+    </script>
 </body>
 </html>
