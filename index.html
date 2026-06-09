@@ -1,98 +1,413 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-theme="light">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EGYPTAIR-NEW FLEET</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-    /* يمكنك إزالة كلاس .bg-login بالكامل لأنه لم يعد مستخدماً */
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>EGYPTAIR — NEW FLEET · Secure Login</title>
+<style>
+/* ════════════════════════════════════════════════
+   EGYPTAIR LOGIN — Midnight Aviation Theme
+   (matches the Fleet Dashboard redesign)
+   ════════════════════════════════════════════════ */
+:root{
+  --bg-0:#070d1f;
+  --bg-1:#0b1430;
+  --glass:rgba(255,255,255,.05);
+  --glass-2:rgba(255,255,255,.09);
+  --stroke:rgba(255,255,255,.1);
+  --stroke-2:rgba(255,255,255,.18);
+  --txt:#eaf0ff;
+  --txt-dim:#92a0c4;
+  --gold:#d4af5a;
+  --gold-2:#f0cf8a;
+  --accent:#5b8cff;
+  --danger:#ff5d6c;
+  --font:'Segoe UI',system-ui,-apple-system,'Cairo',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:var(--font);
+  min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
+  color:var(--txt);
+  background:
+    radial-gradient(900px 500px at 85% -10%, rgba(91,140,255,.18), transparent 60%),
+    radial-gradient(700px 450px at -10% 110%, rgba(212,175,90,.12), transparent 60%),
+    linear-gradient(180deg,var(--bg-0) 0%,var(--bg-1) 55%,var(--bg-0) 100%);
+  background-attachment:fixed;
+  overflow:hidden;
+  position:relative;
+}
+
+/* ─── خطوط طيران ديكورية متحركة في الخلفية ─── */
+.sky{position:fixed;inset:0;pointer-events:none;z-index:0}
+.sky .plane-path{
+  position:absolute;font-size:18px;opacity:0;
+  animation:fly 14s linear infinite;
+  filter:drop-shadow(0 0 6px rgba(212,175,90,.6));
+}
+.sky .p1{top:18%;animation-delay:0s}
+.sky .p2{top:55%;animation-delay:5s;font-size:14px}
+.sky .p3{top:80%;animation-delay:9s;font-size:11px}
+@keyframes fly{
+  0%{left:-5%;opacity:0;transform:translateY(0)}
+  8%{opacity:.55}
+  92%{opacity:.55}
+  100%{left:105%;opacity:0;transform:translateY(-30px)}
+}
+.stars{position:fixed;inset:0;pointer-events:none;z-index:0}
+.stars i{
+  position:absolute;width:3px;height:3px;border-radius:50%;
+  background:rgba(255,255,255,.5);
+  animation:twinkle 3s ease-in-out infinite;
+}
+@keyframes twinkle{0%,100%{opacity:.15;transform:scale(.8)}50%{opacity:.7;transform:scale(1.2)}}
+
+/* ─── كارت تسجيل الدخول ─── */
+.login-card{
+  position:relative;z-index:10;
+  width:100%;max-width:410px;
+  background:linear-gradient(160deg,rgba(255,255,255,.08),rgba(255,255,255,.02));
+  border:1px solid var(--stroke);
+  border-radius:26px;
+  padding:42px 36px 36px;
+  backdrop-filter:blur(18px);
+  box-shadow:0 40px 90px -25px rgba(0,0,0,.8);
+  text-align:center;
+  animation:cardIn .55s cubic-bezier(.2,.9,.3,1.1);
+}
+@keyframes cardIn{from{opacity:0;transform:translateY(26px) scale(.97)}to{opacity:1;transform:none}}
+.login-card::before{
+  content:'';position:absolute;inset:0 0 auto 0;height:3px;
+  border-radius:26px 26px 0 0;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+
+/* الشعار */
+.brand-mark{
+  width:72px;height:72px;border-radius:22px;
+  margin:0 auto 18px;
+  display:grid;place-items:center;font-size:34px;
+  background:linear-gradient(145deg,#1a2a5e,#0d1738);
+  border:1px solid var(--stroke-2);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.15), 0 14px 30px -10px rgba(0,0,0,.7);
+  animation:float 4s ease-in-out infinite;
+}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+h2{
+  font-size:19px;font-weight:900;letter-spacing:3px;text-transform:uppercase;
+  background:linear-gradient(90deg,#fff 30%,var(--gold-2));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  margin-bottom:6px;
+}
+.subtitle{
+  font-size:11.5px;font-weight:700;letter-spacing:4px;text-transform:uppercase;
+  color:var(--txt-dim);margin-bottom:32px;
+  display:flex;align-items:center;gap:12px;justify-content:center;
+}
+.subtitle::before,.subtitle::after{
+  content:'';height:1px;flex:1;max-width:60px;
+  background:linear-gradient(90deg,transparent,rgba(212,175,90,.5));
+}
+.subtitle::after{background:linear-gradient(90deg,rgba(212,175,90,.5),transparent)}
+
+/* الحقول */
+form{display:flex;flex-direction:column;gap:16px;text-align:left}
+.field{position:relative}
+.field input{
+  width:100%;
+  font-family:inherit;font-size:14px;color:var(--txt);
+  background:rgba(8,13,31,.65);
+  border:1px solid var(--stroke-2);
+  border-radius:999px;
+  padding:14px 48px 14px 22px;
+  outline:none;transition:.25s;
+}
+.field input::placeholder{color:#5a688f;letter-spacing:.5px}
+.field input:focus{
+  border-color:var(--gold);
+  background:rgba(8,13,31,.85);
+  box-shadow:0 0 0 4px rgba(212,175,90,.15);
+}
+.field .icon{
+  position:absolute;right:18px;top:50%;transform:translateY(-50%);
+  color:#5a688f;display:flex;transition:.25s;pointer-events:none;
+}
+.field input:focus + .icon{color:var(--gold)}
+.field .icon svg{width:18px;height:18px}
+
+/* الاختيارات */
+.options{display:flex;flex-direction:column;gap:9px;padding:2px 8px}
+.opt{display:flex;align-items:center;gap:9px}
+.opt input[type=checkbox]{
+  appearance:none;-webkit-appearance:none;cursor:pointer;
+  width:17px;height:17px;border-radius:5px;flex-shrink:0;
+  border:1.5px solid var(--stroke-2);
+  background:rgba(8,13,31,.6);
+  display:grid;place-items:center;transition:.2s;
+}
+.opt input[type=checkbox]:checked{
+  background:linear-gradient(135deg,var(--gold-2),var(--gold));
+  border-color:var(--gold);
+}
+.opt input[type=checkbox]:checked::before{
+  content:'✓';font-size:11px;font-weight:900;color:#0d1738;
+}
+.opt label{font-size:12.5px;color:var(--txt-dim);cursor:pointer;user-select:none;letter-spacing:.3px}
+.opt label:hover{color:var(--txt)}
+
+/* زرار الدخول */
+button[type=submit]{
+  width:100%;margin-top:10px;cursor:pointer;
+  font-family:inherit;font-size:14px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;
+  color:#0d1738;
+  background:linear-gradient(135deg,var(--gold-2),var(--gold));
+  border:none;border-radius:999px;padding:15px;
+  box-shadow:0 14px 30px -10px rgba(212,175,90,.55);
+  transition:.22s;position:relative;overflow:hidden;
+}
+button[type=submit]:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 18px 38px -10px rgba(212,175,90,.7)}
+button[type=submit]:active:not(:disabled){transform:scale(.98)}
+button[type=submit]:disabled{opacity:.7;cursor:wait}
+button[type=submit]::after{
+  content:'';position:absolute;top:0;left:-80%;width:50%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);
+  transform:skewX(-25deg);animation:shine 3.2s ease-in-out infinite;
+}
+@keyframes shine{0%,60%{left:-80%}100%{left:130%}}
+
+/* فوتر الكارت */
+.card-footer{
+  margin-top:26px;font-size:10.5px;letter-spacing:2px;text-transform:uppercase;
+  color:#4a5680;display:flex;align-items:center;gap:10px;justify-content:center;
+}
+.card-footer .dot{width:5px;height:5px;border-radius:50%;background:#2ecc8f;animation:twinkle 2s infinite}
+
+/* ─── إشعار الخطأ ─── */
+#error-toast{
+  position:fixed;top:24px;left:50%;z-index:1000;
+  transform:translateX(-50%) translateY(-80px);
+  display:flex;align-items:center;gap:12px;
+  width:calc(100% - 32px);max-width:430px;
+  background:linear-gradient(135deg,rgba(220,38,38,.95),rgba(153,27,27,.95));
+  border:1px solid rgba(255,255,255,.25);
+  color:#fff;font-weight:700;font-size:13.5px;
+  padding:15px 22px;border-radius:16px;
+  backdrop-filter:blur(12px);
+  box-shadow:0 24px 60px -12px rgba(0,0,0,.7);
+  opacity:0;pointer-events:none;
+  transition:.45s cubic-bezier(.2,.9,.3,1.2);
+}
+#error-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#error-toast svg{width:22px;height:22px;flex-shrink:0}
+
+/* ════════ LIGHT THEME (Day Mode) ════════ */
+html[data-theme="light"]{
+  --bg-0:#eef2f9;
+  --bg-1:#e2e9f6;
+  --glass:rgba(13,23,56,.03);
+  --glass-2:rgba(13,23,56,.06);
+  --stroke:rgba(13,23,56,.10);
+  --stroke-2:rgba(13,23,56,.18);
+  --txt:#16213f;
+  --txt-dim:#5b6a8f;
+  --gold:#b8923f;
+  --gold-2:#d4af5a;
+}
+html[data-theme="light"] body{
+  background:
+    radial-gradient(900px 500px at 85% -10%, rgba(91,140,255,.14), transparent 60%),
+    radial-gradient(700px 450px at -10% 110%, rgba(212,175,90,.14), transparent 60%),
+    linear-gradient(180deg,#f4f7fc 0%,#e8edf8 55%,#f4f7fc 100%);
+}
+html[data-theme="light"] .login-card{
+  background:linear-gradient(160deg,rgba(255,255,255,.95),rgba(255,255,255,.8));
+  box-shadow:0 40px 90px -25px rgba(22,33,63,.35);
+}
+html[data-theme="light"] h2{
+  background:linear-gradient(90deg,#16213f 30%,#a07c2c);
+  -webkit-background-clip:text;background-clip:text;
+}
+html[data-theme="light"] .brand-mark{
+  background:linear-gradient(145deg,#ffffff,#dde5f3);
+  box-shadow:inset 0 1px 0 #fff, 0 14px 30px -10px rgba(22,33,63,.3);
+}
+html[data-theme="light"] .field input{
+  background:#fff;color:var(--txt);
+}
+html[data-theme="light"] .field input:focus{
+  background:#fff;
+  box-shadow:0 0 0 4px rgba(184,146,63,.15);
+}
+html[data-theme="light"] .field input::placeholder{color:#9aa6c2}
+html[data-theme="light"] .field .icon{color:#9aa6c2}
+html[data-theme="light"] .opt input[type=checkbox]{background:#fff}
+html[data-theme="light"] .stars i{background:rgba(22,33,63,.25)}
+html[data-theme="light"] .sky .plane-path{filter:drop-shadow(0 0 6px rgba(184,146,63,.5));opacity:.4}
+html[data-theme="light"] .card-footer{color:#8b97b5}
+
+/* ─── زرار تبديل الثيم ─── */
+.theme-toggle{
+  position:fixed;top:20px;left:20px;z-index:100;
+  width:44px;height:44px;border-radius:13px;cursor:pointer;
+  display:grid;place-items:center;font-size:19px;
+  background:var(--glass-2);border:1px solid var(--stroke-2);
+  color:var(--txt);transition:.25s;backdrop-filter:blur(10px);
+}
+.theme-toggle:hover{transform:translateY(-2px) rotate(15deg);border-color:var(--gold);box-shadow:0 8px 20px -8px rgba(212,175,90,.5)}
+
+/* ─── PAGE FOOTER ─── */
+.page-footer{
+  position:fixed;bottom:14px;left:0;right:0;z-index:5;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  text-align:center;pointer-events:none;
+}
+.page-footer .f-line1{
+  font-size:10.5px;font-weight:800;letter-spacing:3px;text-transform:uppercase;
+  color:#8a93a8;
+}
+.page-footer .f-line2{
+  font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;
+  color:#9aa3b8;opacity:.85;
+}
+
+@media(max-width:420px){
+  .login-card{padding:34px 24px 28px}
+  h2{font-size:16px;letter-spacing:2px}
+}
 </style>
 </head>
-<body class="min-h-screen bg-gray-100 relative flex items-center justify-center p-4 sm:p-6 font-sans selection:bg-purple-500 selection:text-white overflow-hidden">
+<body>
 
-    <div class="relative z-10 w-full max-w-md sm:max-w-[400px] p-6 sm:p-10 rounded-2xl sm:rounded-3xl bg-white border border-gray-200 shadow-xl text-gray-800 text-center transition-all duration-300 mx-auto">
-        
-        <div class="mb-6 sm:mb-8 text-center">
-            <h2 class="text-lg sm:text-xl font-black tracking-widest text-gray-900 uppercase mb-1">
-                EGYPTAIR NEW A/C FLEET
-            </h2>
-            <p class="text-xs sm:text-sm text-gray-500 font-bold tracking-widest uppercase">
-                Secure Login
-            </p>
-        </div>
+<!-- زرار تبديل الوضع -->
+<button class="theme-toggle" id="theme-toggle-btn" onclick="toggleTheme()" title="Switch Day / Night Mode">🌙</button>
 
-        <form id="loginForm" class="flex flex-col gap-5 sm:gap-6 text-left" dir="ltr">
-            <div class="relative">
-                <input type="text" id="username" placeholder="Username" required class="w-full bg-gray-50 border border-gray-300 rounded-full px-5 sm:px-6 py-3 sm:py-3.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all pr-12 text-base sm:text-sm" />
-                <div class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                    </svg>
-                </div>
-            </div>
+<!-- خلفية ديكورية -->
+<div class="stars" id="stars"></div>
+<div class="sky">
+  <span class="plane-path p1">✈</span>
+  <span class="plane-path p2">✈</span>
+  <span class="plane-path p3">✈</span>
+</div>
 
-            <div class="relative">
-                <input type="password" id="password" placeholder="Password" required class="w-full bg-gray-50 border border-gray-300 rounded-full px-5 sm:px-6 py-3 sm:py-3.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all pr-12 text-base sm:text-sm" />
-                <div class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-                    </svg>
-                </div>
-            </div>
+<!-- ════════ كارت تسجيل الدخول ════════ -->
+<div class="login-card">
 
-            <div class="flex items-center gap-2 px-2 -mt-1 sm:-mt-2 justify-start">
-                <input type="checkbox" id="showPassword" class="w-4 h-4 accent-purple-600 cursor-pointer rounded border-gray-300" />
-                <label for="showPassword" class="text-xs sm:text-sm text-gray-600 cursor-pointer select-none">Show Password</label>
-            </div>
+  <div class="brand-mark">✈</div>
 
-            <div class="flex items-center gap-2 px-2 justify-start mb-2">
-                <input type="checkbox" id="remember" class="w-4 h-4 accent-purple-600 cursor-pointer rounded border-gray-300" />
-                <label for="remember" class="text-xs sm:text-sm text-gray-600 cursor-pointer select-none">Remember me</label>
-            </div>
+  <h2>EGYPTAIR NEW A/C FLEET</h2>
+  <p class="subtitle">Secure Login</p>
 
-            <button type="submit" class="w-full bg-slate-900 text-white font-bold rounded-full py-3 sm:py-3.5 mt-2 hover:bg-slate-800 active:scale-[0.98] transition-all shadow-lg cursor-pointer text-sm sm:text-base">
-                Login
-            </button>
-        </form>
-    </div>
+  <form id="loginForm" dir="ltr">
 
-    <div id="error-toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 bg-red-600/90 backdrop-blur-md text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 transition-all duration-500 opacity-0 -translate-y-10 pointer-events-none w-11/12 max-w-md text-sm sm:text-base font-bold" dir="rtl">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+    <div class="field">
+      <input type="text" id="username" placeholder="Username" required autocomplete="username">
+      <div class="icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
         </svg>
-        <span id="error-message">بيانات الدخول غير صحيحة، راجع الكود والباسورد!</span>
+      </div>
     </div>
 
-    <script>
-        // دالة سحرية لإظهار رسالة الخطأ الشيك
+    <div class="field">
+      <input type="password" id="password" placeholder="Password" required autocomplete="current-password">
+      <div class="icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="options">
+      <div class="opt">
+        <input type="checkbox" id="showPassword">
+        <label for="showPassword">Show Password</label>
+      </div>
+      <div class="opt">
+        <input type="checkbox" id="remember">
+        <label for="remember">Remember me</label>
+      </div>
+    </div>
+
+    <button type="submit">Login</button>
+  </form>
+
+  <div class="card-footer">
+    <span class="dot"></span> Fleet Operations · Authorized Access Only
+  </div>
+</div>
+
+<!-- ════════ PAGE FOOTER ════════ -->
+<footer class="page-footer">
+  <span class="f-line1">OPS CONTROL</span>
+  <span class="f-line2">POWERED BY MAHMOUD SHAHIN 2026</span>
+</footer>
+
+<!-- ════════ إشعار الخطأ ════════ -->
+<div id="error-toast" dir="rtl">
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+  </svg>
+  <span id="error-message">بيانات الدخول غير صحيحة، راجع الكود والباسورد!</span>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════
+   ORIGINAL LOGIC — kept exactly as your system:
+   Google Apps Script auth + Remember me + Show password
+   ════════════════════════════════════════════════════ */
+
+/* ── THEME (Dark / Light) — shared with dashboard ── */
+(function initTheme(){
+    const saved = localStorage.getItem('fleet_theme') || 'light';
+    document.documentElement.setAttribute('data-theme', saved);
+    updateThemeIcon();
+})();
+function toggleTheme(){
+    const cur = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+    const next = cur === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('fleet_theme', next);
+    updateThemeIcon();
+}
+function updateThemeIcon(){
+    const btn = document.getElementById('theme-toggle-btn');
+    if(btn) btn.textContent = document.documentElement.getAttribute('data-theme') === 'light' ? '☀️' : '🌙';
+}
+
+// ⭐ نجوم عشوائية في الخلفية (ديكور خفيف)
+(function(){
+  const c = document.getElementById('stars');
+  for(let i=0;i<40;i++){
+    const s=document.createElement('i');
+    s.style.left=Math.random()*100+'%';
+    s.style.top=Math.random()*100+'%';
+    s.style.animationDelay=(Math.random()*3)+'s';
+    s.style.opacity=Math.random()*.5+.1;
+    c.appendChild(s);
+  }
+})();
+
+// دالة إظهار رسالة الخطأ الشيك
 function showErrorToast(message) {
     const toast = document.getElementById('error-toast');
     const msgElement = document.getElementById('error-message');
-    
-    // تغيير النص لو حابب
-    if(message) msgElement.innerText = message;
+    if (message) msgElement.innerText = message;
 
-    // إظهار الإشعار (تغيير الكلاسات لعمل أنيميشن النزول)
-    toast.classList.remove('opacity-0', '-translate-y-10');
-    toast.classList.add('opacity-100', 'translate-y-0');
-
-    // إخفاء الإشعار أوتوماتيك بعد 3 ثواني
-    setTimeout(() => {
-        toast.classList.remove('opacity-100', 'translate-y-0');
-        toast.classList.add('opacity-0', '-translate-y-10');
-    }, 3000);
+    toast.classList.add('show');
+    clearTimeout(toast._h);
+    toast._h = setTimeout(() => { toast.classList.remove('show'); }, 3000);
 }
 
-// 👁️ ذكاء إظهار وإخفاء الباسورد
-document.getElementById('showPassword').addEventListener('change', function() {
+// 👁️ إظهار وإخفاء الباسورد
+document.getElementById('showPassword').addEventListener('change', function () {
     const passInput = document.getElementById('password');
-    // لو متعلم عليها، حول الحقل لنص مقروء، ولو لأ رجعه باسورد مخفي
     passInput.type = this.checked ? 'text' : 'password';
 });
 
 // 🧠 سيستم "تذكرني": استرجاع البيانات عند فتح الصفحة
-window.addEventListener('DOMContentLoaded', (event) => {
+window.addEventListener('DOMContentLoaded', () => {
     if (localStorage.getItem('fleetUsername')) {
         document.getElementById('username').value = localStorage.getItem('fleetUsername');
         document.getElementById('password').value = localStorage.getItem('fleetPassword');
@@ -100,11 +415,10 @@ window.addEventListener('DOMContentLoaded', (event) => {
     }
 });
 
+// إرسال البيانات للسيرفر (نفس المنطق الأصلي)
+document.getElementById('loginForm').addEventListener('submit', function (e) {
+    e.preventDefault();
 
-// كود إرسال البيانات (زي ما هو بس غيرنا طريقة عرض الخطأ)
-document.getElementById('loginForm').addEventListener('submit', function(e) {
-    e.preventDefault(); 
-    
     const submitBtn = e.target.querySelector('button[type="submit"]');
     const originalText = submitBtn.innerText;
     submitBtn.innerText = 'Authenticating... ✈️';
@@ -113,7 +427,6 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
     const usernameVal = document.getElementById('username').value;
     const passwordVal = document.getElementById('password').value;
 
-    // تأكد إن الرابط السري بتاعك محطوط هنا صح
     const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyUTEVCT6z11BBEPzAxi_y9cQ6va87KJJZs5C1NlJi_F8w4Pe_P9l6lyy7XAR6Wd0Kp/exec';
 
     fetch(GOOGLE_SCRIPT_URL, {
@@ -123,30 +436,27 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
     .then(response => response.json())
     .then(data => {
         if (data.status === 'success') {
-            // 💾 هنا تكة الـ QA: لو معلم على تذكرني، احفظ البيانات في المتصفح
-        if (document.getElementById('remember').checked) {
-            localStorage.setItem('fleetUsername', usernameVal);
-            localStorage.setItem('fleetPassword', passwordVal);
+            // 💾 لو معلم على تذكرني، احفظ البيانات في المتصفح
+            if (document.getElementById('remember').checked) {
+                localStorage.setItem('fleetUsername', usernameVal);
+                localStorage.setItem('fleetPassword', passwordVal);
+            } else {
+                localStorage.removeItem('fleetUsername');
+                localStorage.removeItem('fleetPassword');
+            }
+            window.location.href = 'dashboard.html';
         } else {
-            // لو مش معلم، امسح البيانات من المتصفح عشان الأمان
-            localStorage.removeItem('fleetUsername');
-            localStorage.removeItem('fleetPassword');
-        }
-            window.location.href = 'dashboard.html'; 
-        } else {
-            // هنا استخدمنا الإشعار الشيك بدل الـ alert
             showErrorToast('بيانات الدخول غير صحيحة، يرجى المحاولة مرة أخرى.');
             submitBtn.innerText = originalText;
             submitBtn.disabled = false;
         }
     })
     .catch(error => {
-        // وهنا كمان في حالة خطأ في النت
         showErrorToast('حدث خطأ في الاتصال، تأكد من الإنترنت الخاص بك.');
         submitBtn.innerText = originalText;
         submitBtn.disabled = false;
     });
 });
-    </script>
+</script>
 </body>
 </html>

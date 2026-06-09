@@ -1,214 +1,1226 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en" dir="ltr" data-theme="light">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EGYPTAIR Fleet Dashboard (Hybrid Cloud/Offline)</title>
-    <link rel="stylesheet" href="style.css">
-</head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EGYPTAIR · Fleet Station Approval Dashboard</title>
+<style>
+/* ════════════════════════════════════════════════
+   EGYPTAIR FLEET DASHBOARD — REDESIGN v3.0
+   Theme: Midnight Aviation (Navy + Gold Glass)
+   Engine: Original Cloud DB (Google Apps Script)
+   ════════════════════════════════════════════════ */
+:root{
+  --bg-0:#070d1f;
+  --bg-1:#0b1430;
+  --glass:rgba(255,255,255,.045);
+  --glass-2:rgba(255,255,255,.08);
+  --stroke:rgba(255,255,255,.09);
+  --stroke-2:rgba(255,255,255,.16);
+  --txt:#eaf0ff;
+  --txt-dim:#92a0c4;
+  --gold:#d4af5a;
+  --gold-2:#f0cf8a;
+  --accent:#5b8cff;
+  --primary:#5b8cff;
+  --success:#2ecc8f;
+  --success-bg:rgba(46,204,143,.12);
+  --warning:#f5b941;
+  --warn-bg:rgba(245,185,65,.12);
+  --danger:#ff5d6c;
+  --radius:18px;
+  --shadow:0 20px 50px -20px rgba(0,0,0,.6);
+  --font:'Segoe UI',system-ui,-apple-system,'Cairo',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font);
+  background:
+    radial-gradient(900px 500px at 85% -10%, rgba(91,140,255,.16), transparent 60%),
+    radial-gradient(700px 450px at -10% 30%, rgba(212,175,90,.10), transparent 60%),
+    linear-gradient(180deg,var(--bg-0) 0%,var(--bg-1) 55%,var(--bg-0) 100%);
+  background-attachment:fixed;
+  color:var(--txt);
+  min-height:100vh;
+  padding:28px 18px 60px;
+}
+.container{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
 
+/* ─── HEADER ─── */
+header{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  background:linear-gradient(135deg,rgba(255,255,255,.07),rgba(255,255,255,.02));
+  border:1px solid var(--stroke);
+  border-radius:var(--radius);
+  padding:20px 26px;
+  backdrop-filter:blur(14px);
+  box-shadow:var(--shadow);
+  position:relative;z-index:500;
+}
+header::before{
+  content:'';position:absolute;inset:0 0 auto 0;height:3px;
+  border-radius:var(--radius) var(--radius) 0 0;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  pointer-events:none;
+}
+.brand{display:flex;align-items:center;gap:16px}
+.brand-mark{
+  width:54px;height:54px;border-radius:16px;flex-shrink:0;
+  display:grid;place-items:center;font-size:26px;
+  background:linear-gradient(145deg,#1a2a5e,#0d1738);
+  border:1px solid var(--stroke-2);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.15), 0 8px 20px -8px rgba(0,0,0,.6);
+}
+header h1{
+  font-size:clamp(16px,2.2vw,22px);font-weight:800;letter-spacing:.4px;
+  background:linear-gradient(90deg,#fff 30%,var(--gold-2));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+#fleet-subtitle{font-size:13px;color:var(--txt-dim);margin-top:4px;letter-spacing:.3px}
+.header-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+#sync-status{
+  font-size:12px;font-weight:600;padding:9px 16px;border-radius:999px;
+  background:var(--warn-bg);color:var(--warning);border:1px solid rgba(245,185,65,.3);
+  display:flex;align-items:center;gap:7px;white-space:nowrap;transition:.3s;
+}
+#sync-status.online{background:var(--success-bg);color:var(--success);border-color:rgba(46,204,143,.3)}
+#sync-status.error{background:rgba(255,93,108,.12);color:var(--danger);border-color:rgba(255,93,108,.3)}
+#sync-status::before{content:'';width:8px;height:8px;border-radius:50%;background:currentColor;animation:pulse 1.6s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.75)}}
+@keyframes ping{75%,100%{transform:scale(2.2);opacity:0}}
+
+/* ─── MENU ─── */
+.menu-container{position:relative}
+.menu-toggle-btn{
+  display:flex;align-items:center;gap:9px;cursor:pointer;
+  font-family:inherit;font-size:13px;font-weight:700;letter-spacing:.4px;color:#0d1738;
+  background:linear-gradient(135deg,var(--gold-2),var(--gold));
+  border:none;border-radius:12px;padding:11px 20px;
+  box-shadow:0 8px 20px -8px rgba(212,175,90,.55);
+  transition:.2s;
+}
+.menu-toggle-btn:hover{transform:translateY(-2px);box-shadow:0 12px 26px -8px rgba(212,175,90,.7)}
+.menu-icon{font-size:15px}
+.dropdown-menu{
+  position:absolute;top:calc(100% + 10px);right:0;min-width:240px;z-index:900;
+  background:rgba(13,21,48,.97);border:1px solid var(--stroke-2);
+  border-radius:16px;padding:8px;backdrop-filter:blur(18px);
+  box-shadow:0 24px 60px -16px rgba(0,0,0,.8);
+  opacity:0;visibility:hidden;transform:translateY(-8px) scale(.97);
+  transition:.22s cubic-bezier(.2,.9,.3,1.2);
+}
+.dropdown-menu.active{opacity:1;visibility:visible;transform:translateY(0) scale(1)}
+.dropdown-menu .btn{
+  display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  background:transparent;border:none;border-radius:10px;cursor:pointer;
+  color:var(--txt);font-family:inherit;font-size:13px;font-weight:600;
+  padding:12px 14px;transition:.15s;
+}
+.dropdown-menu .btn:hover{background:var(--glass-2);padding-left:18px}
+.dropdown-menu .btn-admin:hover{color:var(--gold-2)}
+.dropdown-menu .btn-lock:hover{color:var(--warning)}
+.dropdown-menu .btn-print:hover{color:var(--accent)}
+
+/* ─── FLEET TABS ─── */
+.fleet-tabs{
+  display:inline-flex;gap:6px;align-self:flex-start;
+  background:var(--glass);border:1px solid var(--stroke);
+  border-radius:14px;padding:6px;backdrop-filter:blur(10px);flex-wrap:wrap;
+}
+.tab-btn{
+  font-family:inherit;font-size:13.5px;font-weight:700;letter-spacing:.3px;
+  color:var(--txt-dim);background:transparent;border:none;cursor:pointer;
+  padding:11px 26px;border-radius:10px;transition:.25s;
+}
+.tab-btn:hover{color:var(--txt)}
+.tab-btn.active{
+  color:#0d1738;
+  background:linear-gradient(135deg,var(--gold-2),var(--gold));
+  box-shadow:0 6px 18px -6px rgba(212,175,90,.6);
+}
+
+/* ─── STATS GRID (per-aircraft cards like the original) ─── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
+.stat-card{
+  background:linear-gradient(150deg,rgba(255,255,255,.07),rgba(255,255,255,.02));
+  border:1px solid var(--stroke);border-radius:var(--radius);
+  border-right:4px solid #cbd5e1;
+  padding:20px 22px;backdrop-filter:blur(10px);
+  position:relative;overflow:hidden;transition:.25s;
+}
+.stat-card:hover{transform:translateY(-4px);border-color:var(--stroke-2);border-right-width:4px;box-shadow:var(--shadow)}
+.stat-card .s-top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.stat-card .s-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;box-shadow:0 0 10px currentColor}
+.stat-card .s-label{font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--txt-dim)}
+.stat-card .s-value{font-size:36px;font-weight:800;line-height:1;letter-spacing:-.5px;color:#fff}
+.stat-card .s-sub{font-size:12px;color:var(--txt-dim);margin-top:7px}
+.stat-card .s-bar{height:5px;border-radius:99px;background:rgba(255,255,255,.08);margin-top:14px;overflow:hidden}
+.stat-card .s-bar i{display:block;height:100%;border-radius:99px;transition:width .8s cubic-bezier(.2,.8,.3,1)}
+
+/* ─── SECTION SHELLS ─── */
+.tco-section,.table-container,.controls{
+  background:linear-gradient(150deg,rgba(255,255,255,.05),rgba(255,255,255,.015));
+  border:1px solid var(--stroke);border-radius:var(--radius);
+  backdrop-filter:blur(10px);box-shadow:var(--shadow);
+}
+.tco-section{padding:22px 24px}
+.tco-section h2{
+  font-size:15px;font-weight:800;letter-spacing:.5px;margin-bottom:16px;
+  display:flex;align-items:center;gap:10px;color:var(--gold-2);
+}
+.tco-table-wrapper{overflow-x:auto;border-radius:12px;border:1px solid var(--stroke)}
+
+/* ─── TABLES ─── */
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{
+  background:rgba(8,13,31,.85);color:var(--gold-2);
+  font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;
+  padding:14px 16px;text-align:left;white-space:nowrap;
+  border-bottom:1px solid var(--stroke-2);
+  position:sticky;top:0;z-index:5;
+}
+tbody td{padding:13px 16px;border-bottom:1px solid var(--stroke);color:var(--txt)}
+tbody tr{transition:.15s}
+tbody tr:hover{background:rgba(91,140,255,.06)}
+tbody tr:last-child td{border-bottom:none}
+.table-container{padding:6px;overflow:hidden}
+.table-container .tbl-scroll{max-height:560px;overflow:auto;border-radius:14px}
+
+/* ping-dot status (original style, re-themed) */
+.live-status{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  font-weight:700;font-size:12.5px;letter-spacing:.5px;cursor:default;white-space:nowrap;
+}
+.live-status .ping-wrap{position:relative;display:flex;height:8px;width:8px}
+.live-status .ping-ring{position:absolute;height:100%;width:100%;border-radius:50%;opacity:.75;animation:ping 1.5s cubic-bezier(0,0,.2,1) infinite}
+.live-status .ping-core{position:relative;display:inline-flex;border-radius:50%;height:8px;width:8px}
+.live-status.ok{color:#34d399}
+.live-status.ok .ping-ring{background:#4ade80}
+.live-status.ok .ping-core{background:#16a34a;box-shadow:0 0 8px #22c55e}
+.live-status.wip{color:#fbbf24}
+.live-status.wip .ping-ring{background:#fbbf24;animation-duration:1s}
+.live-status.wip .ping-core{background:#d97706;box-shadow:0 0 8px #f59e0b}
+.blank-dash{color:#5a688f;font-weight:800}
+
+.reg-chip{
+  font-weight:800;letter-spacing:.8px;
+  background:rgba(255,255,255,.05);border:1px solid currentColor;
+  padding:5px 12px;border-radius:8px;font-size:12px;display:inline-block;
+}
+.region-tag{font-size:11.5px;color:var(--txt-dim);font-weight:600;letter-spacing:.4px}
+code.station-code{font-family:inherit;font-weight:800;font-size:14px;letter-spacing:1px;color:var(--txt)}
+.ac-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:middle}
+
+/* ─── CONTROLS / FILTERS ─── */
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;padding:18px 20px}
+.filter-group{display:flex;flex-direction:column;gap:7px}
+.filter-group label{font-size:11px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;color:var(--txt-dim)}
+input,select{
+  font-family:inherit;font-size:13.5px;color:var(--txt);
+  background:rgba(8,13,31,.6);border:1px solid var(--stroke-2);
+  border-radius:11px;padding:11px 14px;outline:none;transition:.2s;width:100%;
+}
+input::placeholder{color:#5a688f}
+input:focus,select:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,175,90,.18)}
+select option{background:#0d1738;color:var(--txt)}
+
+/* ─── MODALS ─── */
+.modal-overlay{
+  position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;
+  background:rgba(4,7,18,.7);backdrop-filter:blur(8px);padding:20px;
+}
+.modal-content{
+  width:100%;max-width:520px;max-height:88vh;overflow-y:auto;
+  background:linear-gradient(160deg,#121d44,#0a1230);
+  border:1px solid var(--stroke-2);border-radius:22px;padding:28px;
+  box-shadow:0 40px 100px -20px rgba(0,0,0,.9);
+  animation:modalIn .3s cubic-bezier(.2,.9,.3,1.15);
+}
+@keyframes modalIn{from{transform:translateY(20px) scale(.97);opacity:0}to{transform:none;opacity:1}}
+.modal-content h2{font-size:17px;font-weight:800;color:var(--gold-2);letter-spacing:.4px;margin-bottom:6px}
+.form-group{display:flex;flex-direction:column;gap:7px;margin-top:14px}
+.form-group label{font-size:12px;font-weight:700;color:var(--txt-dim);letter-spacing:.5px}
+.modal-actions{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:24px;flex-wrap:wrap}
+.btn{
+  font-family:inherit;font-size:13px;font-weight:700;color:#fff;
+  border:none;border-radius:11px;padding:11px 20px;cursor:pointer;
+  transition:.2s;letter-spacing:.3px;
+}
+.btn:hover{transform:translateY(-2px);filter:brightness(1.15)}
+.btn:active{transform:translateY(0)}
+.sub-panel{
+  border:1px dashed rgba(212,175,90,.35);background:rgba(212,175,90,.05);
+  border-radius:14px;padding:14px;margin-top:14px;max-height:280px;overflow-y:auto;
+}
+.tco-plane-box{background:rgba(255,255,255,.04);padding:12px;border-radius:10px;margin-bottom:10px;border:1px solid var(--stroke)}
+hr.sep{border:none;border-top:1px solid var(--stroke);margin:18px 0 4px}
+
+/* ─── TOAST ─── */
+#custom-toast{
+  display:none;position:fixed;bottom:30px;right:30px;z-index:10000;
+  align-items:center;gap:10px;font-weight:700;font-size:14px;color:#fff;
+  background:var(--danger);
+  padding:16px 24px;border-radius:14px;border:1px solid rgba(255,255,255,.2);
+  box-shadow:0 20px 50px -10px rgba(0,0,0,.6);
+  animation:slideIn .35s cubic-bezier(.2,.9,.3,1.2);
+}
+@keyframes slideIn{from{transform:translateX(60px);opacity:0}to{transform:none;opacity:1}}
+
+/* ════════ LIGHT THEME (Day Mode) ════════ */
+html[data-theme="light"]{
+  --bg-0:#eef2f9;
+  --bg-1:#e2e9f6;
+  --glass:rgba(13,23,56,.03);
+  --glass-2:rgba(13,23,56,.06);
+  --stroke:rgba(13,23,56,.10);
+  --stroke-2:rgba(13,23,56,.18);
+  --txt:#16213f;
+  --txt-dim:#5b6a8f;
+  --gold:#b8923f;
+  --gold-2:#d4af5a;
+  --shadow:0 18px 40px -22px rgba(22,33,63,.25);
+}
+html[data-theme="light"] body{
+  background:
+    radial-gradient(900px 500px at 85% -10%, rgba(91,140,255,.12), transparent 60%),
+    radial-gradient(700px 450px at -10% 30%, rgba(212,175,90,.12), transparent 60%),
+    linear-gradient(180deg,#f4f7fc 0%,#e8edf8 55%,#f4f7fc 100%);
+  background-attachment:fixed;
+}
+html[data-theme="light"] header,
+html[data-theme="light"] .stat-card,
+html[data-theme="light"] .tco-section,
+html[data-theme="light"] .table-container,
+html[data-theme="light"] .controls{
+  background:linear-gradient(150deg,rgba(255,255,255,.92),rgba(255,255,255,.75));
+}
+html[data-theme="light"] header h1{
+  background:linear-gradient(90deg,#16213f 30%,#a07c2c);
+  -webkit-background-clip:text;background-clip:text;
+}
+html[data-theme="light"] .brand-mark{
+  background:linear-gradient(145deg,#ffffff,#dde5f3);
+  box-shadow:inset 0 1px 0 #fff, 0 8px 20px -8px rgba(22,33,63,.25);
+}
+html[data-theme="light"] .dropdown-menu{
+  background:rgba(255,255,255,.98);
+  box-shadow:0 24px 60px -16px rgba(22,33,63,.35);
+}
+html[data-theme="light"] thead th{
+  background:#eef2fa;color:#a07c2c;
+}
+html[data-theme="light"] input,
+html[data-theme="light"] select{
+  background:#fff;color:var(--txt);
+}
+html[data-theme="light"] select option{background:#fff;color:var(--txt)}
+html[data-theme="light"] input::placeholder{color:#9aa6c2}
+html[data-theme="light"] .modal-content{
+  background:linear-gradient(160deg,#ffffff,#f0f4fc);
+  box-shadow:0 40px 100px -20px rgba(22,33,63,.45);
+}
+html[data-theme="light"] .modal-overlay{background:rgba(22,33,63,.35)}
+html[data-theme="light"] .stat-card .s-value{color:#16213f}
+html[data-theme="light"] .stat-card .s-bar{background:rgba(22,33,63,.08)}
+html[data-theme="light"] tbody tr:hover{background:rgba(91,140,255,.07)}
+html[data-theme="light"] .live-status.ok{color:#15803d}
+html[data-theme="light"] .live-status.wip{color:#b45309}
+html[data-theme="light"] .blank-dash{color:#9aa6c2}
+html[data-theme="light"] code.station-code{color:#16213f}
+html[data-theme="light"] .reg-chip{background:rgba(22,33,63,.03)}
+html[data-theme="light"] .tco-plane-box{background:rgba(255,255,255,.7)}
+html[data-theme="light"] .sub-panel{background:rgba(212,175,90,.07)}
+html[data-theme="light"] .tab-btn:hover{color:#16213f}
+html[data-theme="light"] ::-webkit-scrollbar-thumb{background:rgba(22,33,63,.2)}
+
+/* ─── زرار تبديل الثيم ─── */
+.theme-toggle{
+  width:42px;height:42px;border-radius:12px;cursor:pointer;flex-shrink:0;
+  display:grid;place-items:center;font-size:18px;
+  background:var(--glass-2);border:1px solid var(--stroke-2);
+  color:var(--txt);transition:.25s;
+}
+.theme-toggle:hover{transform:translateY(-2px) rotate(15deg);border-color:var(--gold);box-shadow:0 8px 20px -8px rgba(212,175,90,.5)}
+
+/* ─── PAGE FOOTER ─── */
+.page-footer{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  margin-top:10px;padding:18px 0 4px;text-align:center;
+}
+.page-footer .f-line1{
+  font-size:11px;font-weight:800;letter-spacing:3px;text-transform:uppercase;
+  color:#8a93a8;
+}
+.page-footer .f-line2{
+  font-size:9.5px;font-weight:600;letter-spacing:2px;text-transform:uppercase;
+  color:#9aa3b8;opacity:.85;
+}
+
+/* scrollbars */
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:99px}
+::-webkit-scrollbar-thumb:hover{background:rgba(212,175,90,.5)}
+
+/* responsive */
+@media(max-width:680px){
+  body{padding:14px 10px 50px}
+  header{padding:16px}
+  .fleet-tabs{align-self:stretch;display:flex}
+  .tab-btn{flex:1;padding:11px 8px;font-size:12px}
+  #custom-toast{left:14px;right:14px;bottom:14px}
+}
+
+/* ─── PRINT ─── */
+@media print{
+  body{background:#fff;color:#000;padding:0}
+  header .header-actions,.controls,.fleet-tabs{display:none!important}
+  .stat-card,.tco-section,.table-container,header{box-shadow:none;border:1px solid #ccc;background:#fff;color:#000}
+  thead th{background:#eee;color:#000}
+  tbody td{color:#000;border-color:#ddd}
+  header h1{-webkit-text-fill-color:#000}
+  .modal-overlay,#custom-toast{display:none!important}
+  .page-footer{display:none!important}
+  .table-container .tbl-scroll{max-height:none;overflow:visible}
+  .stat-card .s-value,code.station-code{color:#000}
+}
+</style>
+</head>
 <body>
 
 <div class="container">
-    <header>
-        <div>
-            <h1>✈ EGYPTAIR - Fleet Station Approval Dashboard</h1>
-            <p id="fleet-subtitle" style="margin: 5px 0 0 0; opacity: 0.8;">Active Fleet: Airbus A350-900 Dashboard</p>
-        </div>
-        <div class="header-actions">
-    <div id="sync-status">🔄 Connecting to Cloud DB...</div>
-    
-    <div class="menu-container">
+
+  <!-- ════════ HEADER ════════ -->
+  <header>
+    <div class="brand">
+      <div class="brand-mark">✈</div>
+      <div>
+        <h1>EGYPTAIR — Fleet Station Approval Dashboard</h1>
+        <p id="fleet-subtitle">Active Fleet: Airbus A350-900 Dashboard</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div id="sync-status">🔄 Connecting to Cloud DB...</div>
+      <button class="theme-toggle" id="theme-toggle-btn" onclick="toggleTheme()" title="Switch Day / Night Mode">🌙</button>
+      <div class="menu-container">
         <button class="menu-toggle-btn" onclick="event.stopPropagation(); document.getElementById('dropdown-menu').classList.toggle('active');">
-            <span class="menu-icon">☰</span>
-            <span class="menu-text">Menu</span>
+          <span class="menu-icon">☰</span><span class="menu-text">Menu</span>
         </button>
-        
         <div class="dropdown-menu" id="dropdown-menu">
-            <button class="btn btn-manage" id="manage-btn" onclick="document.getElementById('dropdown-menu').classList.remove('active'); openModal()">⚙️ Control Panel</button>
-    
-            <button class="btn btn-admin" id="admin-btn" onclick="document.getElementById('dropdown-menu').classList.remove('active'); openPasswordModal()">🔒 Admin Login</button>
-    
-            <button class="btn btn-lock" id="lock-btn" onclick="document.getElementById('dropdown-menu').classList.remove('active'); lockDashboard()">🔓 Lock Changes</button>
-    
-            <button class="btn btn-print" onclick="document.getElementById('dropdown-menu').classList.remove('active'); triggerPrintGuide()">🖨️ Print Fleet Report</button>
+          <button class="btn btn-manage" id="manage-btn" style="display:none;" onclick="document.getElementById('dropdown-menu').classList.remove('active'); openModal()">⚙️ Control Panel</button>
+          <button class="btn btn-admin" id="admin-btn" onclick="document.getElementById('dropdown-menu').classList.remove('active'); openPasswordModal()">🔒 Admin Login</button>
+          <button class="btn btn-lock" id="lock-btn" style="display:none;" onclick="document.getElementById('dropdown-menu').classList.remove('active'); lockDashboard()">🔓 Lock Changes</button>
+          <button class="btn btn-print" onclick="document.getElementById('dropdown-menu').classList.remove('active'); triggerPrintGuide()">🖨️ Print Fleet Report</button>
         </div>
+      </div>
     </div>
+  </header>
+
+  <!-- ════════ FLEET TABS ════════ -->
+  <div class="fleet-tabs">
+    <button class="tab-btn active" id="tab-A359" onclick="switchFleet('A359')">Airbus A350-900</button>
+    <button class="tab-btn" id="tab-B738M" onclick="switchFleet('B738M')">Boeing 737-8 MAX</button>
+  </div>
+
+  <!-- ════════ STATS (per-aircraft, like original) ════════ -->
+  <div class="stats-grid" id="stats-container"></div>
+
+  <!-- ════════ TCO ════════ -->
+  <div class="tco-section">
+    <h2>📋 Third Country Operator (TCO) Requirements</h2>
+    <div class="tco-table-wrapper">
+      <table class="tco-table">
+        <thead>
+          <tr>
+            <th>✈️ Aircraft Registration</th>
+            <th>🇦🇪 UAE TCO Status</th>
+            <th>🇬🇧 UK TCO Status</th>
+            <th>🇪🇺 EU TCO Status</th>
+          </tr>
+        </thead>
+        <tbody id="tco-table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ════════ FILTERS ════════ -->
+  <div class="controls">
+    <div class="filter-group">
+      <label>Search Station</label>
+      <input type="text" id="station-search-filter" onkeyup="filterTable()" placeholder="e.g. DXB, LHR...">
+    </div>
+    <div class="filter-group">
+      <label>Region</label>
+      <select id="region-filter" onchange="filterTable()">
+        <option value="all">All Regions</option>
+        <option value="Europe">Europe</option>
+        <option value="America">America</option>
+        <option value="Far East">Far East</option>
+        <option value="Africa">Africa</option>
+        <option value="Middle East">Middle East</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Aircraft Registration</label>
+      <select id="aircraft-filter" onchange="filterTable()"><option value="all">All Aircrafts</option></select>
+    </div>
+    <div class="filter-group">
+      <label>Status</label>
+      <select id="status-filter" onchange="filterTable()">
+        <option value="all">🌐 All Statuses</option>
+        <option value="APPROVED">APPROVED (✔️)</option>
+        <option value="UNDER PROCESS">⏳ Under Process</option>
+        <option value="">📃 Blank (Remaining)</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- ════════ MAIN TABLE ════════ -->
+  <div class="table-container">
+    <div class="tbl-scroll">
+      <table id="stations-table">
+        <thead><tr id="table-header-row"><th>Geographic Region</th><th>Station</th></tr></thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ════════ FOOTER ════════ -->
+  <footer class="page-footer">
+    <span class="f-line1">OPS CONTROL</span>
+    <span class="f-line2">POWERED BY MAHMOUD SHAHIN 2026</span>
+  </footer>
 </div>
-    </header>
 
-    <div class="fleet-tabs">
-        <button class="tab-btn active" id="tab-A359" onclick="switchFleet('A359')">Airbus A350-900</button>
-        <button class="tab-btn" id="tab-B738M" onclick="switchFleet('B738M')">Boeing 737-8 MAX</button>
-    </div>
-
-    <div class="stats-grid" id="stats-container"></div>
-
-    <div class="tco-section">
-        <h2>📋 Third Country Operator (TCO) Requirements</h2>
-        <div class="tco-table-wrapper">
-            <table class="tco-table">
-                <thead>
-                    <tr>
-                        <th>✈️ Aircraft Registration</th>
-                        <th>🇦🇪 UAE TCO Status</th>
-                        <th>🇬🇧 UK TCO Status</th>
-                        <th>🇪🇺 EU TCO Status</th>
-                    </tr>
-                </thead>
-                <tbody id="tco-table-body">
-                    <!-- الداتا هتتبني ديناميكياً بناء على الطائرات -->
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div class="controls">
-        <div class="filter-group">
-            <label>Search Station:</label>
-            <input type="text" id="station-search-filter" onkeyup="filterTable()" placeholder="e.g. DXB, LHR...">
-        </div>
-        <div class="filter-group">
-            <label>Region:</label>
-            <select id="region-filter" onchange="filterTable()">
-                <option value="all">All Regions</option>
-                <option value="Europe">Europe</option>
-                <option value="America">America</option>
-                <option value="Far East">Far East</option>
-                <option value="Africa">Africa</option>
-                <option value="Middle East">Middle East</option>
-            </select>
-        </div>
-        <div class="filter-group">
-            <label>Aircraft Registration:</label>
-            <select id="aircraft-filter" onchange="filterTable()"><option value="all">All Aircrafts</option></select>
-        </div>
-        <div class="filter-group">
-            <label>Status:</label>
-            <select id="status-filter" onchange="filterTable()">
-                <option value="all">🌐 All Statuses</option>
-                <option value="APPROVED">APPROVED (✔️)</option>
-                <option value="UNDER PROCESS">⏳ Under Process</option>
-                <option value="">📃Blank (Remaining)</option>
-            </select>
-        </div>
-    </div>
-
-    <div class="table-container">
-        <table id="stations-table">
-            <thead><tr id="table-header-row"><th>Geographic Region</th><th>Station</th></tr></thead>
-            <tbody id="table-body"></tbody>
-        </table>
-    </div>
-</div>
-
+<!-- ════════ PASSWORD MODAL ════════ -->
 <div class="modal-overlay" id="password-modal">
-    <div class="modal-content" style="width: 100%; max-width: 350px;">
-        <h2>🔒 Security Verification</h2>
-        <div class="form-group" style="margin-top: 15px;">
-            <label>Enter Admin Password:</label>
-            <input type="password" id="admin-password-input" placeholder="••••" style="text-align: center; font-size: 18px; letter-spacing: 4px;">
-            <p id="password-error-msg" style="color: var(--danger); font-size: 12px; margin: 5px 0 0 0; display: none; font-weight: bold;">❌ Wrong password! Access denied.</p>
-        </div>
-        <div class="modal-actions" style="margin-top: 25px; justify-content: flex-end; gap: 10px;">
-            <button class="btn" style="background:#64748b;" onclick="closePasswordModal()">Cancel</button>
-            <button class="btn" style="background:var(--success);" onclick="verifyAdminPassword()">Unlock</button>
-        </div>
+  <div class="modal-content" style="max-width:360px;">
+    <h2>🔒 Security Verification</h2>
+    <div class="form-group" style="margin-top:15px;">
+      <label>Enter Admin Password</label>
+      <input type="password" id="admin-password-input" placeholder="••••" style="text-align:center;font-size:18px;letter-spacing:6px;">
+      <p id="password-error-msg" style="color:var(--danger);font-size:12px;margin:5px 0 0;display:none;font-weight:bold;">❌ Wrong password! Access denied.</p>
     </div>
+    <div class="modal-actions" style="justify-content:flex-end;">
+      <button class="btn" style="background:#3a4569;" onclick="closePasswordModal()">Cancel</button>
+      <button class="btn" style="background:var(--success);color:#06281b;" onclick="verifyAdminPassword()">Unlock</button>
+    </div>
+  </div>
 </div>
 
+<!-- ════════ MANAGEMENT MODAL ════════ -->
 <div class="modal-overlay" id="form-modal">
-    <div class="modal-content">
-        <h2 id="modal-title">⚙️ Management & Fleet Control</h2>
-        <div class="form-group">
-            <label>What do you want to do?</label>
-            <select id="management-type" onchange="handleManagementTypeChange()">
-                <option value="station">Manage Stations / TCO Approvals</option>
-                <option value="aircraft">Manage Fleet (Add / Remove Aircraft)</option>
-                <option value="backup">💾 System Data Backup (Manual Export / Import)</option>
-            </select>
-        </div>
-
-        <div id="aircraft-section" style="display: none; border-top: 2px solid #f1f5f9; padding-top: 15px;">
-            <div class="form-group">
-                <label>Action Mode:</label>
-                <select id="aircraft-mode" onchange="handleAircraftModeChange()">
-                    <option value="add">Add New Aircraft Registration</option>
-                    <option value="remove">Remove Existing Aircraft</option>
-                </select>
-            </div>
-            <div class="form-group" id="aircraft-input-group">
-                <label id="aircraft-input-label">New Aircraft Reg Code:</label>
-                <input type="text" id="new-aircraft-name" placeholder="Enter Registration Code">
-            </div>
-            <div class="form-group" id="aircraft-remove-group" style="display: none;">
-                <label>Select Aircraft to Remove:</label>
-                <select id="remove-aircraft-select"></select>
-            </div>
-        </div>
-
-        <div id="station-section" style="border-top: 2px solid #f1f5f9; padding-top: 15px;">
-            <div class="form-group">
-                <label>Select Target Item to Edit:</label>
-                <select id="form-station-select" onchange="loadStationOrTcoData()"></select>
-            </div>
-
-            <div id="tco-edit-sub-section" style="display:none; background: #faf5ff; padding: 12px; border-radius: 8px; border: 1px dashed #d8b4fe; max-height: 250px; overflow-y:auto;">
-                 <!-- حقول تعديل التيكو لكل طائرة هتتبني هنا ديناميكياً -->
-            </div>
-
-            <div id="station-fields-wrapper">
-                <div class="form-group" id="station-mode-container">
-                    <label>Action Mode:</label>
-                    <select id="form-mode" onchange="handleModeChange()">
-                        <option value="add">New Station (Add)</option>
-                        <option value="edit">Existing Station (Edit / Delete)</option>
-                    </select>
-                </div>
-                <div class="form-group" id="station-input-group">
-                    <label>Station Code (e.g. DXB):</label>
-                    <input type="text" id="form-station-name" placeholder="Enter Station Code">
-                </div>
-                <div class="form-group">
-                    <label>Geographic Region:</label>
-                    <select id="form-region">
-                        <option value="Middle East">Middle East</option>
-                        <option value="Europe">Europe</option>
-                        <option value="America">America</option>
-                        <option value="Far East">Far East</option>
-                        <option value="Africa">Africa</option>
-                    </select>
-                </div>
-                <div class="dynamic-statuses">
-                    <label style="font-weight: bold; font-size:13px; color:var(--accent);">Set Aircraft Approvals:</label>
-                    <div id="dynamic-status-inputs" style="margin-top: 8px;"></div>
-                </div>
-            </div>
-        </div>
-
-        <div id="backup-section" style="display: none; border-top: 2px solid #f1f5f9; padding-top: 15px;">
-            <p style="font-size: 13px; color:#475569; margin: 0 0 10px 0;">Offline Backup Tools:</p>
-            <div class="form-group" style="background:#f0fdf4; padding:12px; border-radius:8px; border:1px solid #bbf7d0;">
-                <label style="color:#16a34a;">📥 Export System Data</label>
-                <button class="btn" style="background:#16a34a; margin-top:5px; width:100%;" onclick="exportSystemData()">Download Backup File (.json)</button>
-            </div>
-            <div class="form-group" style="background:#eff6ff; padding:12px; border-radius:8px; border:1px solid #bfdbfe; margin-top:10px;">
-                <label style="color:#1d4ed8;">📤 Step 2: Import System Data</label>
-                <input type="file" id="import-file-input" accept=".json" style="margin-top:5px; font-size:12px;">
-                <button class="btn" style="background:#1d4ed8; margin-top:8px; width:100%;" onclick="importSystemData()">Upload & Restore Backup</button>
-            </div>
-        </div>
-
-        <div class="modal-actions" id="modal-footer-actions">
-            <div><button class="btn" id="btn-delete-station" style="background:var(--danger); display:none;" onclick="deleteStation()">🗑️ Delete Station</button></div>
-            <div style="display:flex; gap:10px;">
-                <button class="btn" style="background:#64748b;" onclick="closeModal()">Cancel</button>
-                <button class="btn" style="background:var(--success);" id="btn-save-form" onclick="saveManagementForm()">Save Changes</button>
-            </div>
-        </div>
+  <div class="modal-content">
+    <h2 id="modal-title">⚙️ Management &amp; Fleet Control</h2>
+    <div class="form-group">
+      <label>What do you want to do?</label>
+      <select id="management-type" onchange="handleManagementTypeChange()">
+        <option value="station">Manage Stations / TCO Approvals</option>
+        <option value="aircraft">Manage Fleet (Add / Remove Aircraft)</option>
+        <option value="backup">💾 System Data Backup (Manual Export / Import)</option>
+      </select>
     </div>
+
+    <!-- aircraft section -->
+    <div id="aircraft-section" style="display:none;">
+      <hr class="sep">
+      <div class="form-group">
+        <label>Action Mode</label>
+        <select id="aircraft-mode" onchange="handleAircraftModeChange()">
+          <option value="add">Add New Aircraft Registration</option>
+          <option value="remove">Remove Existing Aircraft</option>
+        </select>
+      </div>
+      <div class="form-group" id="aircraft-input-group">
+        <label id="aircraft-input-label">New Aircraft Reg Code</label>
+        <input type="text" id="new-aircraft-name" placeholder="e.g. SU-GGK">
+      </div>
+      <div class="form-group" id="aircraft-remove-group" style="display:none;">
+        <label>Select Aircraft to Remove</label>
+        <select id="remove-aircraft-select"></select>
+      </div>
+    </div>
+
+    <!-- station section -->
+    <div id="station-section">
+      <hr class="sep">
+      <div class="form-group">
+        <label>Select Target Item to Edit</label>
+        <select id="form-station-select" onchange="loadStationOrTcoData()"></select>
+      </div>
+
+      <div id="tco-edit-sub-section" class="sub-panel" style="display:none;"></div>
+
+      <div id="station-fields-wrapper">
+        <div class="form-group" id="station-mode-container">
+          <label>Action Mode</label>
+          <select id="form-mode" onchange="handleModeChange()">
+            <option value="add">New Station (Add)</option>
+            <option value="edit">Existing Station (Edit / Delete)</option>
+          </select>
+        </div>
+        <div class="form-group" id="station-input-group">
+          <label>Station Code (e.g. DXB)</label>
+          <input type="text" id="form-station-name" placeholder="Enter Station Code">
+        </div>
+        <div class="form-group">
+          <label>Geographic Region</label>
+          <select id="form-region">
+            <option value="Middle East">Middle East</option>
+            <option value="Europe">Europe</option>
+            <option value="America">America</option>
+            <option value="Far East">Far East</option>
+            <option value="Africa">Africa</option>
+          </select>
+        </div>
+        <div class="form-group dynamic-statuses">
+          <label style="color:var(--gold-2);">Set Aircraft Approvals</label>
+          <div id="dynamic-status-inputs" style="margin-top:4px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- backup section -->
+    <div id="backup-section" style="display:none;">
+      <hr class="sep">
+      <p style="font-size:13px;color:var(--txt-dim);margin:10px 0;">Offline Backup Tools:</p>
+      <div class="form-group" style="background:var(--success-bg);padding:14px;border-radius:12px;border:1px solid rgba(46,204,143,.3);">
+        <label style="color:var(--success);">📥 Export System Data</label>
+        <button class="btn" style="background:var(--success);color:#06281b;margin-top:5px;width:100%;" onclick="exportSystemData()">Download Backup File (.json)</button>
+      </div>
+      <div class="form-group" style="background:rgba(91,140,255,.1);padding:14px;border-radius:12px;border:1px solid rgba(91,140,255,.3);">
+        <label style="color:var(--accent);">📤 Import System Data</label>
+        <input type="file" id="import-file-input" accept=".json" style="margin-top:5px;font-size:12px;">
+        <button class="btn" style="background:var(--accent);margin-top:8px;width:100%;" onclick="importSystemData()">Upload &amp; Restore Backup</button>
+      </div>
+    </div>
+
+    <div class="modal-actions" id="modal-footer-actions">
+      <div><button class="btn" id="btn-delete-station" style="background:var(--danger);display:none;" onclick="deleteStation()">🗑️ Delete Station</button></div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn" style="background:#3a4569;" onclick="closeModal()">Cancel</button>
+        <button class="btn" style="background:var(--success);color:#06281b;" id="btn-save-form" onclick="saveManagementForm()">Save Changes</button>
+      </div>
+    </div>
+  </div>
 </div>
-<div id="custom-toast" style="display: none; position: fixed; bottom: 30px; right: 30px; background: #ef4444; color: white; padding: 16px 24px; border-radius: 10px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); z-index: 10000; font-weight: bold; font-size: 14px; align-items: center; gap: 10px; animation: slideIn 0.3s ease;"></div>
-<script src="script.js"></script>
-</body>
+
+<div id="custom-toast"></div>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   ORIGINAL ENGINE — Cloud DB (Google Apps Script) + Local Cache
+   Re-integrated with the new design. All original logic kept:
+   per-aircraft stat cards, SHA-256 admin auth, ping badges,
+   column show/hide filtering, region-sorted rows.
+   ════════════════════════════════════════════════════════════ */
+/* ── THEME (Dark / Light) — shared with login page ── */
+(function initTheme(){
+    const saved = localStorage.getItem('fleet_theme') || 'light';
+    document.documentElement.setAttribute('data-theme', saved);
+})();
+function toggleTheme(){
+    const cur = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+    const next = cur === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('fleet_theme', next);
+    updateThemeIcon();
+}
+function updateThemeIcon(){
+    const btn = document.getElementById('theme-toggle-btn');
+    if(btn) btn.textContent = document.documentElement.getAttribute('data-theme') === 'light' ? '☀️' : '🌙';
+}
+document.addEventListener('DOMContentLoaded', updateThemeIcon);
+
+const API_URL = "https://script.google.com/macros/s/AKfycbwG7q8kD0GotJ3tPmbu6Q9bgzkaihP1DeXVNeYuQoZtHh9q3lDZVFF_70ZTOP5TuSRxSA/exec";
+let isAdmin = false;
+let currentFleet = "A359";
+let fleetData = {};
+
+/* ── CLOUD SYNC ── */
+async function fetchFromCloud() {
+    showSyncStatus("🔄 Connecting to Cloud DB...", "connecting");
+    try {
+        let response = await fetch(API_URL + "?_=" + new Date().getTime(), { cache: 'no-store' });
+        let cloudData = await response.json();
+        console.log("My Raw Fleet Data:", cloudData);
+
+        if (cloudData && (cloudData.A359 || cloudData.B738M)) {
+            // إصلاح جذري: تحويل مفاتيح bma القديمة لحروف التسجيل الحقيقية
+            if (cloudData.B738M && cloudData.B738M.aircrafts && cloudData.B738M.aircrafts.includes("bma")) {
+                console.log("Old aircraft IDs detected on server. Rewriting with correct registrations...");
+                cloudData.B738M.aircrafts = ["ggm", "ggn", "ggl"];
+                cloudData.B738M.labels = {
+                    "ggm": { title: "SU-GGM", color: "#6366f1" },
+                    "ggn": { title: "SU-GGN", color: "#8b5cf6" },
+                    "ggl": { title: "SU-GGL", color: "#38bdf8" }
+                };
+                if (cloudData.B738M.stations) {
+                    cloudData.B738M.stations.forEach(st => {
+                        if (st.hasOwnProperty("bma")) { st.ggm = st.bma; delete st.bma; }
+                        if (st.hasOwnProperty("bmb")) { st.ggn = st.bmb; delete st.bmb; }
+                        if (st.hasOwnProperty("bmc")) { st.ggl = st.bmc; delete st.bmc; }
+                    });
+                }
+            }
+            // بناء tco_tracks لو ناقصة
+            ["A359", "B738M"].forEach(fleet => {
+                if (cloudData[fleet]) {
+                    if (!cloudData[fleet].tco_tracks) {
+                        cloudData[fleet].tco_tracks = {};
+                        if (cloudData[fleet].tco && cloudData[fleet].aircrafts) {
+                            cloudData[fleet].aircrafts.forEach(plane => {
+                                cloudData[fleet].tco_tracks[plane] = {
+                                    uae: cloudData[fleet].tco.uae || "",
+                                    uk: cloudData[fleet].tco.uk || "",
+                                    eu: cloudData[fleet].tco.eu || ""
+                                };
+                            });
+                        }
+                    }
+                    if (!cloudData[fleet].stations) cloudData[fleet].stations = [];
+                    if (!cloudData[fleet].aircrafts) cloudData[fleet].aircrafts = [];
+                    if (!cloudData[fleet].labels) cloudData[fleet].labels = {};
+                }
+            });
+            fleetData = cloudData;
+            localStorage.setItem('egyptair_fleet_cache', JSON.stringify(fleetData));
+            showSyncStatus("☁️ Cloud DB Connected", "online");
+        } else {
+            fleetData = getDefaultData();
+            await saveToCloud();
+        }
+        initializeDashboard();
+    } catch (error) {
+        console.error("Cloud Fetch Error: ", error);
+        showSyncStatus("❌ Offline Mode (Using Cache)", "error");
+        try { fleetData = JSON.parse(localStorage.getItem('egyptair_fleet_cache')) || getDefaultData(); }
+        catch(e) { fleetData = getDefaultData(); }
+        initializeDashboard();
+    }
+}
+
+async function saveToCloud() {
+    showSyncStatus("⏳ Saving to Cloud...", "connecting");
+    localStorage.setItem('egyptair_fleet_cache', JSON.stringify(fleetData));
+    try {
+        let response = await fetch(API_URL, { method: "POST", body: JSON.stringify(fleetData) });
+        let res = await response.json();
+        if (res.status === "success") {
+            showSyncStatus("☁️ Cloud DB Updated", "online");
+        } else {
+            showSyncStatus("⚠️ Save Error", "error");
+        }
+    } catch (e) {
+        showSyncStatus("⚠️ Network error (Saved locally)", "error");
+    }
+}
+
+function showSyncStatus(text, state) {
+    const el = document.getElementById('sync-status');
+    if (el) { el.innerText = text; el.className = state === "online" ? "online" : (state === "error" ? "error" : ""); }
+}
+
+/* ── SECURITY (SHA-256, no plain password in code) ── */
+function openPasswordModal() {
+    document.getElementById('admin-password-input').value = '';
+    document.getElementById('password-error-msg').style.display = 'none';
+    document.getElementById('password-modal').style.display = 'flex';
+    setTimeout(() => { document.getElementById('admin-password-input').focus(); }, 100);
+}
+function closePasswordModal() { document.getElementById('password-modal').style.display = 'none'; }
+
+async function sha256(string) {
+    const utf8 = new Uint8Array(Array.from(string).map(c => c.charCodeAt(0)));
+    const hashBuffer = await crypto.subtle.digest('SHA-256', utf8);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function verifyAdminPassword() {
+    const enteredPass = document.getElementById('admin-password-input').value;
+    const SECURE_HASH = "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4";
+    let enteredHash = "";
+    try { enteredHash = await sha256(enteredPass); } catch(e) { enteredHash = ""; }
+
+    if (enteredHash === SECURE_HASH) {
+        isAdmin = true;
+        document.getElementById('admin-btn').style.display = 'none';
+        document.getElementById('lock-btn').style.display = 'flex';
+        document.getElementById('manage-btn').style.display = 'flex';
+        closePasswordModal();
+        openModal();
+    } else {
+        document.getElementById('password-error-msg').style.display = 'block';
+        document.getElementById('admin-password-input').value = '';
+        document.getElementById('admin-password-input').focus();
+    }
+}
+
+function lockDashboard() {
+    isAdmin = false;
+    document.getElementById('admin-btn').style.display = 'flex';
+    document.getElementById('lock-btn').style.display = 'none';
+    document.getElementById('manage-btn').style.display = 'none';
+    closeModal();
+}
+
+function triggerPrintGuide() { window.print(); }
+
+/* ── FLEET SWITCH ── */
+function switchFleet(fleetCode) {
+    currentFleet = fleetCode;
+    document.getElementById('tab-A359').classList.toggle('active', fleetCode === 'A359');
+    document.getElementById('tab-B738M').classList.toggle('active', fleetCode === 'B738M');
+    document.getElementById('fleet-subtitle').innerText = `Active Fleet: ${fleetData[fleetCode].title} Dashboard`;
+    document.getElementById('station-search-filter').value = '';
+    document.getElementById('region-filter').value = 'all';
+    document.getElementById('status-filter').value = 'all';
+    initializeDashboard();
+}
+
+function initializeDashboard() {
+    buildStatsCards();
+    renderTcoTable();
+    buildTableHeaders();
+    buildAircraftFilterDropdown();
+    renderTableRows();
+}
+
+/* ── STATS CARDS (per-aircraft — original design, re-themed) ── */
+function buildStatsCards() {
+    const container = document.getElementById('stats-container'); container.innerHTML = '';
+    const f = fleetData[currentFleet];
+    if (!f || !f.aircrafts) return;
+    const total = f.stations ? f.stations.length : 0;
+    f.aircrafts.forEach(plane => {
+        const color = f.labels[plane]?.color || "#cbd5e1";
+        const title = f.labels[plane]?.title || plane.toUpperCase();
+        const count = f.stations ? f.stations.filter(r => r[plane] === '✔️').length : 0;
+        const pct = total ? Math.round(count / total * 100) : 0;
+        const card = document.createElement('div');
+        card.className = `stat-card card-${plane}`;
+        card.style.borderRightColor = color;
+        card.innerHTML = `
+            <div class="s-top">
+                <span class="s-dot" style="background:${color};color:${color};"></span>
+                <span class="s-label">${title} Approved Stations</span>
+            </div>
+            <div class="s-value" id="count-${plane}">${count}</div>
+            <div class="s-sub">${pct}% of ${total} stations</div>
+            <div class="s-bar"><i style="width:${pct}%;background:${color};"></i></div>`;
+        container.appendChild(card);
+    });
+}
+
+/* ── TCO TABLE ── */
+function renderTcoTable() {
+    const tbody = document.getElementById('tco-table-body');
+    tbody.innerHTML = '';
+    const f = fleetData[currentFleet];
+    if (!f || !f.aircrafts) return;
+    if (!f.tco_tracks) f.tco_tracks = {};
+    f.aircrafts.forEach(plane => {
+        const planeTco = f.tco_tracks[plane] || { uae: "", uk: "", eu: "" };
+        const planeTitle = f.labels[plane]?.title || plane.toUpperCase();
+        const color = f.labels[plane]?.color || "#d4af5a";
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><span class="reg-chip" style="color:${color};">${planeTitle}</span></td>
+            <td>${getTcoBadgeMarkup(planeTco.uae)}</td>
+            <td>${getTcoBadgeMarkup(planeTco.uk)}</td>
+            <td>${getTcoBadgeMarkup(planeTco.eu)}</td>`;
+        tbody.appendChild(tr);
+    });
+}
+
+function getTcoBadgeMarkup(val) {
+    if (val === 'OK') {
+        return `<div class="live-status ok">
+            <span class="ping-wrap"><span class="ping-ring"></span><span class="ping-core"></span></span>
+            OK</div>`;
+    }
+    if (val === 'Under Processed' || val === 'UNDER PROCESS') {
+        return `<div class="live-status wip">
+            <span class="ping-wrap"><span class="ping-ring"></span><span class="ping-core"></span></span>
+            Under Processed</div>`;
+    }
+    return `<strong class="blank-dash">—</strong>`;
+}
+
+/* ── MAIN TABLE ── */
+function buildTableHeaders() {
+    const headerRow = document.getElementById('table-header-row');
+    headerRow.innerHTML = '<th>Geographic Region</th><th>Station</th>';
+    const f = fleetData[currentFleet];
+    if (!f || !f.aircrafts) return;
+    f.aircrafts.forEach(plane => {
+        const color = f.labels[plane]?.color || "#d4af5a";
+        headerRow.innerHTML += `<th class="col-${plane}"><span class="ac-dot" style="background:${color}"></span>${f.labels[plane]?.title || plane.toUpperCase()}</th>`;
+    });
+}
+
+function buildAircraftFilterDropdown() {
+    const filter = document.getElementById('aircraft-filter');
+    const cur = filter.value;
+    filter.innerHTML = '<option value="all">All Aircrafts</option>';
+    const f = fleetData[currentFleet];
+    if (!f || !f.aircrafts) return;
+    f.aircrafts.forEach(plane => {
+        filter.innerHTML += `<option value="${plane}">${f.labels[plane]?.title || plane.toUpperCase()}</option>`;
+    });
+    if ([...filter.options].some(o => o.value === cur)) filter.value = cur;
+}
+
+function renderTableRows() {
+    const tbody = document.getElementById('table-body'); tbody.innerHTML = '';
+    const f = fleetData[currentFleet];
+    if (!f || !f.stations) return;
+    // ترتيب المحطات حسب الإقليم الجغرافي أوتوماتيكياً (زي الأصل)
+    const sortedStations = [...f.stations].sort((a, b) => a.region.localeCompare(b.region));
+    sortedStations.forEach((row) => {
+        const tr = document.createElement('tr');
+        tr.setAttribute('data-region', row.region);
+        let html = `<td><span class="region-tag">${row.region}</span></td><td><code class="station-code">${row.station}</code></td>`;
+        f.aircrafts.forEach(plane => { html += `<td class="cell-${plane}">${getBadgeMarkup(row[plane] || "")}</td>`; });
+        tr.innerHTML = html;
+        tbody.appendChild(tr);
+    });
+    updateCounts();
+    filterTable();
+}
+
+function getBadgeMarkup(value) {
+    if (value === '✔️') {
+        return `<div class="live-status ok">
+            <span class="ping-wrap"><span class="ping-ring"></span><span class="ping-core"></span></span>
+            APPROVED</div>`;
+    }
+    if (value === 'Under Processed') {
+        return `<div class="live-status wip">
+            <span class="ping-wrap"><span class="ping-ring"></span><span class="ping-core"></span></span>
+            Under Processed</div>`;
+    }
+    return `<strong class="blank-dash">—</strong>`;
+}
+
+function updateCounts() {
+    if (!fleetData[currentFleet] || !fleetData[currentFleet].aircrafts) return;
+    fleetData[currentFleet].aircrafts.forEach(plane => {
+        let count = fleetData[currentFleet].stations.filter(r => r[plane] === '✔️').length;
+        const el = document.getElementById(`count-${plane}`);
+        if (el) el.innerText = count;
+    });
+}
+
+/* ── FILTERING (original logic: rows + column/card show-hide) ── */
+function filterTable() {
+    const f = fleetData[currentFleet];
+    if (!f || !f.aircrafts) return;
+    const s = document.getElementById('station-search-filter').value.trim().toUpperCase();
+    const rVal = document.getElementById('region-filter').value;
+    const aVal = document.getElementById('aircraft-filter').value;
+    const stVal = document.getElementById('status-filter').value.trim().toLowerCase();
+
+    // 1. إظهار/إخفاء الأعمدة والكروت حسب الطائرة المختارة
+    f.aircrafts.forEach(p => {
+        let disp = (aVal === 'all' || aVal === p) ? '' : 'none';
+        const col = document.querySelector(`.col-${p}`);
+        if (col) col.style.display = disp;
+        document.querySelectorAll(`.cell-${p}`).forEach(c => c.style.display = disp);
+        const card = document.querySelector(`.card-${p}`);
+        if (card) card.style.display = disp;
+    });
+
+    // 2. فلترة الصفوف
+    document.querySelectorAll('#table-body tr').forEach((row) => {
+        const rowRegion = row.getAttribute('data-region');
+        const codeEl = row.querySelector('code');
+        const rowStation = codeEl ? codeEl.innerText.trim().toUpperCase() : "";
+
+        const matchS = s === '' || rowStation.includes(s);
+        const matchR = rVal === 'all' || rowRegion === rVal;
+
+        let matchSt = false;
+        if (stVal === 'all') {
+            matchSt = true;
+        } else {
+            if (aVal !== 'all') {
+                const cell = row.querySelector(`.cell-${aVal}`);
+                const cellText = cell ? cell.innerText.trim().toLowerCase() : "";
+                if (stVal === "approved") {
+                    matchSt = cellText.includes("approved") || cellText.includes("approve");
+                } else if (stVal === "under process") {
+                    matchSt = cellText.includes("under") || cellText.includes("processed");
+                } else if (stVal === "") {
+                    matchSt = cellText === "—" || cellText === "-" || cellText === "";
+                }
+            } else {
+                const cells = Array.from(row.querySelectorAll('td')).slice(2);
+                const cellsText = cells.map(td => td.innerText.trim().toLowerCase());
+                if (stVal === "approved") {
+                    matchSt = cellsText.some(t => t.includes("approved") || t.includes("approve"));
+                } else if (stVal === "under process") {
+                    matchSt = cellsText.some(t => t.includes("under") || t.includes("processed"));
+                } else if (stVal === "") {
+                    matchSt = cellsText.some(t => t === "—" || t === "-" || t === "");
+                }
+            }
+        }
+        row.style.display = (matchS && matchR && matchSt) ? '' : 'none';
+    });
+}
+
+/* ── MANAGEMENT MODAL ── */
+function openModal() {
+    if (!isAdmin) { openPasswordModal(); return; }
+    document.getElementById('form-modal').style.display = 'flex';
+    document.getElementById('management-type').value = 'station';
+    document.getElementById('modal-title').innerText = `⚙️ ${fleetData[currentFleet].title} Control Panel`;
+    buildDynamicStatusInputs();
+    populateStationDropdown();
+    populateAircraftRemovalDropdown();
+    handleManagementTypeChange();
+}
+function closeModal() { document.getElementById('form-modal').style.display = 'none'; }
+
+function handleManagementTypeChange() {
+    const type = document.getElementById('management-type').value;
+    document.getElementById('aircraft-section').style.display = (type === 'aircraft') ? 'block' : 'none';
+    document.getElementById('station-section').style.display = (type === 'station') ? 'block' : 'none';
+    document.getElementById('backup-section').style.display = (type === 'backup') ? 'block' : 'none';
+    document.getElementById('modal-footer-actions').style.display = (type === 'backup') ? 'none' : 'flex';
+    if (type === 'station') loadStationOrTcoData();
+    if (type === 'aircraft') handleAircraftModeChange();
+}
+
+function handleAircraftModeChange() {
+    const isAdd = document.getElementById('aircraft-mode').value === 'add';
+    document.getElementById('aircraft-input-group').style.display = isAdd ? 'flex' : 'none';
+    document.getElementById('aircraft-remove-group').style.display = isAdd ? 'none' : 'flex';
+}
+
+function handleModeChange() {
+    const isAdd = document.getElementById('form-mode').value === 'add';
+    document.getElementById('station-input-group').style.display = isAdd ? 'flex' : 'none';
+    document.getElementById('btn-delete-station').style.display = isAdd ? 'none' : 'inline-block';
+    if (!isAdd) loadStationOrTcoData();
+}
+
+function buildDynamicStatusInputs() {
+    const container = document.getElementById('dynamic-status-inputs'); container.innerHTML = '';
+    const f = fleetData[currentFleet];
+    if (!f || !f.aircrafts) return;
+    f.aircrafts.forEach(plane => {
+        container.innerHTML += `<div class="form-group"><label>${f.labels[plane]?.title || plane.toUpperCase()}:</label>
+            <select id="form-input-${plane}"><option value="">- Blank -</option><option value="✔️">✔️ Approved</option><option value="Under Processed">Under Processed</option></select></div>`;
+    });
+}
+
+function populateStationDropdown() {
+    const select = document.getElementById('form-station-select'); select.innerHTML = '';
+    select.innerHTML += `<option value="TCO_MANAGEMENT">⭐ --- Manage TCO Approvals (By Aircraft) ---</option>`;
+    select.innerHTML += `<option value="ADD_NEW_STATION_MODE">+ Add New Station Mode</option>`;
+    if (fleetData[currentFleet] && fleetData[currentFleet].stations) {
+        [...fleetData[currentFleet].stations].sort((a, b) => a.station.localeCompare(b.station)).forEach(item => {
+            select.innerHTML += `<option value="${item.station}">Station: ${item.station} (${item.region})</option>`;
+        });
+    }
+}
+
+function populateAircraftRemovalDropdown() {
+    const select = document.getElementById('remove-aircraft-select'); select.innerHTML = '';
+    const f = fleetData[currentFleet];
+    if (!f || !f.aircrafts) return;
+    f.aircrafts.forEach(plane => {
+        select.innerHTML += `<option value="${plane}">${f.labels[plane]?.title || plane.toUpperCase()}</option>`;
+    });
+}
+
+function loadStationOrTcoData() {
+    const target = document.getElementById('form-station-select').value;
+    const f = fleetData[currentFleet];
+    const tcoSub = document.getElementById('tco-edit-sub-section');
+
+    if (target === "TCO_MANAGEMENT") {
+        tcoSub.style.display = 'block';
+        document.getElementById('station-fields-wrapper').style.display = 'none';
+        document.getElementById('btn-delete-station').style.display = 'none';
+        tcoSub.innerHTML = '<p style="margin:0 0 10px 0;font-weight:bold;color:var(--gold-2);font-size:13px;">Update Aircraft TCO Statuses:</p>';
+        if (!f.tco_tracks) f.tco_tracks = {};
+        f.aircrafts.forEach(plane => {
+            const planeTitle = f.labels[plane]?.title || plane.toUpperCase();
+            const color = f.labels[plane]?.color || "#d4af5a";
+            tcoSub.innerHTML += `
+                <div class="tco-plane-box">
+                    <span class="reg-chip" style="color:${color};">${planeTitle}</span>
+                    <div class="form-group" style="margin-top:8px;">
+                        <label>UAE TCO:</label>
+                        <select id="form-tco-uae-${plane}"><option value="">- Blank -</option><option value="OK">OK</option><option value="Under Processed">UNDER PROCESS</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label>UK TCO:</label>
+                        <select id="form-tco-uk-${plane}"><option value="">- Blank -</option><option value="OK">OK</option><option value="Under Processed">UNDER PROCESS</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label>EU TCO:</label>
+                        <select id="form-tco-eu-${plane}"><option value="">- Blank -</option><option value="OK">OK</option><option value="Under Processed">UNDER PROCESS</option></select>
+                    </div>
+                </div>`;
+        });
+        f.aircrafts.forEach(plane => {
+            const planeTco = f.tco_tracks[plane] || { uae: "", uk: "", eu: "" };
+            document.getElementById(`form-tco-uae-${plane}`).value = planeTco.uae || "";
+            document.getElementById(`form-tco-uk-${plane}`).value = planeTco.uk || "";
+            document.getElementById(`form-tco-eu-${plane}`).value = planeTco.eu || "";
+        });
+    }
+    else if (target === "ADD_NEW_STATION_MODE") {
+        tcoSub.style.display = 'none';
+        document.getElementById('station-fields-wrapper').style.display = 'block';
+        document.getElementById('station-input-group').style.display = 'flex';
+        document.getElementById('btn-delete-station').style.display = 'none';
+        document.getElementById('form-mode').value = 'add';
+        document.getElementById('form-station-name').value = "";
+        f.aircrafts.forEach(plane => { document.getElementById(`form-input-${plane}`).value = ""; });
+    }
+    else {
+        tcoSub.style.display = 'none';
+        document.getElementById('station-fields-wrapper').style.display = 'block';
+        document.getElementById('station-input-group').style.display = 'none';
+        document.getElementById('btn-delete-station').style.display = 'inline-block';
+        document.getElementById('form-mode').value = 'edit';
+        const data = f.stations.find(item => item.station === target);
+        if (data) {
+            document.getElementById('form-region').value = data.region;
+            f.aircrafts.forEach(plane => { document.getElementById(`form-input-${plane}`).value = data[plane] || ""; });
+        }
+    }
+}
+
+function deleteStation() {
+    const code = document.getElementById('form-station-select').value;
+    if (code === "TCO_MANAGEMENT" || code === "ADD_NEW_STATION_MODE") return;
+    fleetData[currentFleet].stations = fleetData[currentFleet].stations.filter(item => item.station !== code);
+    saveToCloud(); initializeDashboard(); closeModal();
+    showNotification(`🗑️ Station ${code} deleted.`, "warning");
+}
+
+/* ── BACKUP ── */
+function exportSystemData() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fleetData));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", "egyptair_fleet_backup.json");
+    document.body.appendChild(downloadAnchor); downloadAnchor.click(); downloadAnchor.remove();
+}
+
+function importSystemData() {
+    const fileInput = document.getElementById('import-file-input');
+    if (fileInput.files.length === 0) { showNotification("⚠️ Choose a .json file first!", "warning"); return; }
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        try {
+            const importedData = JSON.parse(e.target.result);
+            if (importedData.A359) {
+                fleetData = importedData;
+                saveToCloud(); initializeDashboard(); closeModal();
+                showNotification("✅ Backup restored successfully!", "success");
+            }
+        } catch (err) { showNotification("❌ Invalid backup file!", "error"); }
+    };
+    reader.readAsText(fileInput.files[0]);
+}
+
+/* ── SAVE FORM ── */
+async function saveManagementForm() {
+    const type = document.getElementById('management-type').value;
+    const f = fleetData[currentFleet];
+
+    if (type === 'aircraft') {
+        if (document.getElementById('aircraft-mode').value === 'add') {
+            const name = document.getElementById('new-aircraft-name').value.trim().toUpperCase();
+            if (!name) { showNotification("⚠️ Please enter a valid Aircraft Registration!", "warning"); return; }
+            const key = name.replace(/[^A-Z0-9]/g, "").toLowerCase();
+            if (f.aircrafts.includes(key)) { showNotification(`❌ Aircraft (${name}) already exists!`, "error"); return; }
+            f.aircrafts.push(key);
+            f.labels[key] = { title: name, color: "#" + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0') };
+            f.stations.forEach(r => r[key] = "");
+            showNotification(`✈️ Aircraft ${name} added successfully!`, "success");
+        } else {
+            const target = document.getElementById('remove-aircraft-select').value;
+            const planeTitle = f.labels[target]?.title || target.toUpperCase();
+            f.aircrafts = f.aircrafts.filter(p => p !== target);
+            delete f.labels[target];
+            f.stations.forEach(r => delete r[target]);
+            showNotification(`🗑️ Aircraft ${planeTitle} removed.`, "warning");
+        }
+    } else {
+        const target = document.getElementById('form-station-select').value;
+        if (target === "TCO_MANAGEMENT") {
+            if (!f.tco_tracks) f.tco_tracks = {};
+            f.aircrafts.forEach(plane => {
+                f.tco_tracks[plane] = {
+                    uae: document.getElementById(`form-tco-uae-${plane}`).value,
+                    uk: document.getElementById(`form-tco-uk-${plane}`).value,
+                    eu: document.getElementById(`form-tco-eu-${plane}`).value
+                };
+            });
+            showNotification("📋 TCO Requirements updated successfully!", "success");
+        } else {
+            const region = document.getElementById('form-region').value;
+            let vals = {};
+            f.aircrafts.forEach(p => vals[p] = document.getElementById(`form-input-${p}`).value);
+            if (target === "ADD_NEW_STATION_MODE") {
+                const sName = document.getElementById('form-station-name').value.trim().toUpperCase();
+                if (!sName) { showNotification("⚠️ Please enter a valid Station Code!", "warning"); return; }
+                if (f.stations.some(i => i.station === sName)) { showNotification(`❌ Station (${sName}) already exists in this fleet!`, "error"); return; }
+                let newRow = { region, station: sName };
+                f.aircrafts.forEach(p => newRow[p] = vals[p]);
+                f.stations.push(newRow);
+                showNotification(`📍 Station ${sName} added successfully!`, "success");
+            } else {
+                const idx = f.stations.findIndex(i => i.station === target);
+                if (idx !== -1) {
+                    f.stations[idx].region = region;
+                    f.aircrafts.forEach(p => f.stations[idx][p] = vals[p]);
+                    showNotification(`✏️ Station ${target} updated successfully!`, "success");
+                }
+            }
+        }
+    }
+    await saveToCloud();
+    initializeDashboard();
+    closeModal();
+}
+
+/* ── NOTIFICATIONS ── */
+function showNotification(message, type = "error") {
+    const toast = document.getElementById('custom-toast');
+    toast.innerText = message;
+    toast.style.display = 'flex';
+    if (type === "success") {
+        toast.style.backgroundColor = "#16a34a";
+    } else if (type === "warning") {
+        toast.style.backgroundColor = "#d97706";
+    } else {
+        toast.style.backgroundColor = "#dc2626";
+    }
+    clearTimeout(toast._h);
+    toast._h = setTimeout(() => { toast.style.display = 'none'; }, 4000);
+}
+
+/* ── DEFAULT DATA (your real fleet snapshot as offline fallback) ── */
+function getDefaultData() {
+    return {"A359":{"title":"Airbus A350-900","aircrafts":["gge","ggh","ggi"],"labels":{"gge":{"title":"SU-GGE","color":"#ec4899"},"ggh":{"title":"SU-GGH","color":"#10b981"},"ggi":{"title":"SU-GGI","color":"#f59e0b"}},"tco_tracks":{"gge":{"uae":"OK","uk":"OK","eu":"OK"},"ggh":{"uae":"OK","uk":"OK","eu":"OK"},"ggi":{"uae":"OK","uk":"OK","eu":"OK"}},"stations":[{"region":"Middle East","station":"JED","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Middle East","station":"MED","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Middle East","station":"RUH","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Middle East","station":"DMM","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Middle East","station":"ELQ","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Middle East","station":"AMM","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Middle East","station":"BAH","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Middle East","station":"DOH","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Middle East","station":"KWI","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Middle East","station":"TIF","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Middle East","station":"TUU","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Middle East","station":"DXB","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Middle East","station":"AUH","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Middle East","station":"SHJ","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Middle East","station":"BEY","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Middle East","station":"MCT","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Europe","station":"ATH","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Europe","station":"IST","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Europe","station":"FCO","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Europe","station":"MXP","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Europe","station":"FRA","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Europe","station":"MUC","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Europe","station":"BER","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Europe","station":"DUS","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Europe","station":"AMS","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Europe","station":"GVA","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Europe","station":"ZRH","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Europe","station":"VIE","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Europe","station":"CDG","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Europe","station":"LHR","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Europe","station":"DUB","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Europe","station":"MAN","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Europe","station":"PRG","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Europe","station":"MAD","gge":"✔️","ggh":"✔️","ggi":"Under Processed"},{"region":"Europe","station":"BCN","gge":"✔️","ggh":"✔️","ggi":"Under Processed"},{"region":"Europe","station":"BUD","gge":"✔️","ggh":"✔️","ggi":"Under Processed"},{"region":"Europe","station":"BRU","gge":"✔️","ggh":"✔️","ggi":"Under Processed"},{"region":"America","station":"JFK","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"America","station":"EWR","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"America","station":"IAD","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"America","station":"LAX","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"America","station":"ORD","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"America","station":"YYZ","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Africa","station":"CMN","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Africa","station":"FIH","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Africa","station":"PZU","gge":"✔️","ggh":"✔️","ggi":"Under Processed"},{"region":"Africa","station":"DLA","gge":"✔️","ggh":"Under Processed","ggi":"✔️"},{"region":"Africa","station":"ACC","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Africa","station":"EBB","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Africa","station":"NDJ","gge":"✔️","ggh":"✔️","ggi":"Under Processed"},{"region":"Africa","station":"DAR","gge":"✔️","ggh":"Under Processed","ggi":"Under Processed"},{"region":"Africa","station":"ALG","gge":"✔️","ggh":"Under Processed","ggi":"Under Processed"},{"region":"Africa","station":"ASM","gge":"✔️","ggh":"✔️","ggi":"Under Processed"},{"region":"Africa","station":"ABJ","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Africa","station":"JIB","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Africa","station":"NBO","gge":"✔️","ggh":"Under Processed","ggi":"✔️"},{"region":"Far East","station":"PVG","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Far East","station":"CAN","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Far East","station":"PEK","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Far East","station":"HGH","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Middle East","station":"BGW","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Middle East","station":"EBL","gge":"✔️","ggh":"✔️","ggi":"✔️"},{"region":"Middle East","station":"DME","gge":"Under Processed","ggh":"Under Processed","ggi":"Under Processed"},{"region":"Africa","station":"KGL","gge":"","ggh":"","ggi":""},{"region":"Africa","station":"JNB","gge":"✔️","ggh":"✔️","ggi":"✔️"}]},"B738M":{"title":"Boeing 737-8 MAX","aircrafts":["ggm","ggn","ggl"],"labels":{"ggm":{"title":"SU-GGM","color":"#6366f1"},"ggn":{"title":"SU-GGN","color":"#8b5cf6"},"ggl":{"title":"SU-GGL","color":"#38bdf8"}},"tco_tracks":{"ggm":{"uae":"OK","uk":"OK","eu":"OK"},"ggn":{"uae":"OK","uk":"OK","eu":"OK"},"ggl":{"uae":"OK","uk":"OK","eu":"OK"}},"stations":[{"region":"Middle East","station":"JED","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Middle East","station":"MED","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Middle East","station":"RUH","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Middle East","station":"DMM","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Middle East","station":"ELQ","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Middle East","station":"TIF","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Middle East","station":"TUU","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Middle East","station":"AMM","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Middle East","station":"BAH","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Middle East","station":"DOH","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Middle East","station":"DXB","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Middle East","station":"AUH","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Middle East","station":"KWI","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Middle East","station":"BEY","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Middle East","station":"MCT","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Africa","station":"TUN","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Africa","station":"DAR","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Africa","station":"FIH","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Africa","station":"ABJ","ggm":"✔️","ggn":"Under Processed","ggl":"✔️"},{"region":"Africa","station":"DLA","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Africa","station":"ACC","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Africa","station":"JIB","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Europe","station":"IST","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Middle East","station":"BGW","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Middle East","station":"EBL","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Africa","station":"KGL","ggm":"","ggn":"","ggl":""},{"region":"Africa","station":"EBB","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Europe","station":"MAD","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Europe","station":"BCN","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Europe","station":"VIE","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Europe","station":"AMS","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Europe","station":"BRU","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Africa","station":"PZU","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Europe","station":"GVA","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Europe","station":"MXP","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Europe","station":"FCO","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Europe","station":"LCA","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Africa","station":"NBO","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Europe","station":"BER","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Europe","station":"MUC","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Europe","station":"FRA","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Europe","station":"DUS","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Europe","station":"ATH","ggm":"✔️","ggn":"✔️","ggl":"✔️"},{"region":"Europe","station":"DUB","ggm":"✔️","ggn":"✔️","ggl":"✔️"}]}};
+}
+
+/* ── INIT ── */
+document.addEventListener('click', () => document.getElementById('dropdown-menu').classList.remove('active'));
+document.getElementById('admin-password-input').addEventListener('keypress', function (e) { if (e.key === 'Enter') { verifyAdminPassword(); } });
+document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.style.display = 'none'; }));
+fetchFromCloud();
+</script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a09408ad5c6be23b',t:'MTc4MTA0ODk3Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
